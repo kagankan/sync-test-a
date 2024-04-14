@@ -41,6 +41,7 @@ jobs:
           # git log --since="24 hours ago" --merges --pretty=format:"%H"
           tree
           cp sync-test-b/README.md README.md
+          rm sync-test-b -rf
           tree
         id: log
 
