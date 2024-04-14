@@ -70,7 +70,7 @@ jobs:
               }
             }
 
-            if (prsWithFileChanges.length > 0) {
+            if (prsWithFileChanges.count > 0) {
               console.log('Changes found');
             } else {
               console.log('No changes');
