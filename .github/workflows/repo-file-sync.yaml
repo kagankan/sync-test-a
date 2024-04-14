@@ -24,18 +24,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup
+        run: |
+          git config user.name "GitHub App Bot"
+          git config user.email "<email@domain.com>"
+          git checkout -b new-branch-${{ github.run_id }}
+
       - name: Generate token
         id: generate_token
         uses: tibdex/github-app-token@v1
         with:
           app_id: ${{ secrets.REPO_FILE_SYNC_APP_ID }}
           private_key: ${{ secrets.REPO_FILE_SYNC_PRIVATE_KEY }}
-
-      - name: Setup
-        run: |
-          git config user.name "GitHub App Bot"
-          git config user.email "<email@domain.com>"
-          git checkout -b new-branch-${{ github.run_id }}
 
       - name: Clone and Sync Repositories
         run: |
