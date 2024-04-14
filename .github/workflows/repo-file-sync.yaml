@@ -24,17 +24,16 @@ jobs:
           app_id: ${{ secrets.REPO_FILE_SYNC_APP_ID }}
           private_key: ${{ secrets.REPO_FILE_SYNC_PRIVATE_KEY }}
 
-      # - name: Sync files
-      #   uses: StudistCorporation/actions-repo-file-sync@v0.0.4
-      #   with:
-      #     token: ${{ steps.generate_token.outputs.token }}
-      #     username: john
-      #     email: john@example.com
 
       - name: Configure Git
         run: |
           git config user.name "GitHub App Bot"
           git config user.email "<email@domain.com>"
+
+
+      - name: Create a new branch
+        run: |
+          git checkout -b update-branch
 
       - name: Sync file from source repository
         run: |
@@ -52,5 +51,6 @@ jobs:
         with:
           github_token: ${{ steps.generate_token.outputs.token }}
           destination_branch: "main"
+          source_branch: "update-branch"  # update-branchからのPR
           pr_title: "Update from source repository"
           pr_body: "Automated PR to update the specified file."
