@@ -49,14 +49,19 @@ jobs:
             const { data: pullRequests } = await github.rest.pulls.list({
               owner: owner,
               repo: repo,
-              state: 'merged', // TODO: mergedだけに
+              state: 'closed',
               sort: 'created',
               direction: 'desc'
             });
 
+            const sinceDate = new Date(Date.now() - 24 * 60 * 60 * 1000);  // 24 hours ago
+
+            // マージされたPRで、過去24時間以内にマージされたものをフィルタリング
+            const mergedPRs = pullRequests.filter(pr => pr.merged_at && new Date(pr.merged_at) > sinceDate);
+
             const prsWithFileChanges = new Set();
             const changedFiles = new Set();
-            for (const pr of pullRequests) {
+            for (const pr of mergedPRs) {
               const { data: files } = await github.rest.pulls.listFiles({
                 owner: owner,
                 repo: repo,
