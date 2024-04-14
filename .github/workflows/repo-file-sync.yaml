@@ -79,8 +79,8 @@ jobs:
               console.log('No open PRs with changes to ');
             }
             return {
-              changedFiles: changedFiles.join("\n");
-              description: prsWithFileChanges.join("\n");
+              changedFiles: changedFiles.join("\n"),
+              description: prsWithFileChanges.join("\n"),
             }
 
       - name: Clone and Sync Repositories
