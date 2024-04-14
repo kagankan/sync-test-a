@@ -29,6 +29,10 @@ jobs:
           git config user.name "GitHub App Bot"
           git config user.email "<email@domain.com>"
 
+      - name: Create a new branch in Repository A
+        run: |
+          git checkout -b new-branch-${{ github.run_id }}
+          # git pull https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/kagankan/sync-test-b.git ${GITHUB_SHA}
 
       - name: Clone Repository B and get recent merges
         run: |
@@ -40,10 +44,6 @@ jobs:
           tree
         id: log
 
-      - name: Create a new branch in Repository A
-        run: |
-          git checkout -b new-branch-${{ github.run_id }}
-          # git pull https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/kagankan/sync-test-b.git ${GITHUB_SHA}
 
       - name: Push changes to the new branch
         run: |
