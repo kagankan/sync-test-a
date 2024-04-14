@@ -83,7 +83,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const parsedOptions = JSON.parse(${{ matrix.file }});
+            const parsedOptions = JSON.parse(${{ matrix.settings }});
             console.log(parsedOptions);
             const [owner, repo] = parsedOptions.repo;
 
