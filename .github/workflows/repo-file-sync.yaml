@@ -13,7 +13,7 @@ jobs:
       SETTINGS: |
         {
           "kagankan/sync-test-b": [
-            "README.md",
+            "README.md"
           ]
         }
     runs-on: ubuntu-latest
