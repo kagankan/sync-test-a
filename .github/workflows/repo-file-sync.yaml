@@ -112,7 +112,7 @@ jobs:
             }
 
             if (prsWithFileChanges.length > 0) {
-              console.log('PRs with changes to ' + filename + ':');
+              console.log('PRs with changes to:');
               console.log(prsWithFileChanges.join('\n'));
             } else {
               console.log('No open PRs with changes to ');
