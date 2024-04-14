@@ -85,7 +85,7 @@ jobs:
           echo "Cloning $REPO"
           git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
           # Copy the specified files
-          FILES=${{ steps.list_prs.outputs.changedFiles }}
+          FILES="${{ steps.list_prs.outputs.changedFiles }}"
           for FILE in $FILES; do
             echo "Copying $FILE from $REPO"
             cp "$REPO/$FILE" .
