@@ -35,7 +35,9 @@ jobs:
           git clone https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/kagankan/sync-test-b.git
           # cd sync-test-b
           # git log --since="24 hours ago" --merges --pretty=format:"%H"
+          tree
           cp sync-test-b/README.md README.md
+          tree
         id: log
 
       - name: Create a new branch in Repository A
