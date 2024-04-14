@@ -11,7 +11,7 @@ jobs:
   sync:
     strategy:
       matrix:
-        settings:           
+        config:           
           -  |
              {
                 "repo": "kagankan/sync-test-b",
@@ -43,7 +43,7 @@ jobs:
         with:
           github-token: ${{ steps.generate_token.outputs.token }}
           script: |
-            const parsedOptions = ${{ matrix.settings }};
+            const parsedOptions = ${{ matrix.config }};
             const [owner, repo] = parsedOptions.repo.split("/");
 
             const { data: pullRequests } = await github.rest.pulls.list({
@@ -69,7 +69,7 @@ jobs:
               for (const targetPath of parsedOptions.paths) {
                 const fileChanged = files.some(file => file.filename.startsWith(targetPath));
                 if (fileChanged) {
-                  changedFiles.add(targetFile);
+                  changedFiles.add(targetPath);
                   prsWithFileChanges.add(`${parsedOptions.repo}#${pr.number}: ${pr.title}`);
                 }
               }
@@ -86,7 +86,7 @@ jobs:
       - name: Sync Repositories
         run: |
           # Clone the repository
-          REPO=${{ fromJSON(matrix.settings).repo }}
+          REPO=${{ fromJSON(matrix.config).repo }}
           echo "Cloning $REPO"
           git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
           # Copy the specified files
