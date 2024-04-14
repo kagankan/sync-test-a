@@ -16,16 +16,10 @@ jobs:
              {
                 "repo": "kagankan/sync-test-b",
                 "files": [
-                  "README.md"
+                  "README.md",
+                  "test/test.md"
                 ]
              }
-    env:
-      SETTINGS: |
-        {
-          "kagankan/sync-test-b": [
-            "README.md"
-          ]
-        }
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
