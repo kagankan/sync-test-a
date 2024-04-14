@@ -40,7 +40,7 @@ jobs:
       - name: Create a new branch in Repository A
         run: |
           git checkout -b new-branch-${{ github.run_id }}
-          git pull https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/kagankan/sync-test-b.git ${GITHUB_SHA}
+          # git pull https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/kagankan/sync-test-b.git ${GITHUB_SHA}
 
       - name: Push changes to the new branch
         run: |
