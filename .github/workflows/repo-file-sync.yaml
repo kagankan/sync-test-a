@@ -88,7 +88,6 @@ jobs:
             console.log(parsedOptions);
             const [owner, repo] = parsedOptions.repo.split("/");
 
-
             const { data: pullRequests } = await github.rest.pulls.list({
               owner: owner,
               repo: repo,
@@ -104,9 +103,11 @@ jobs:
                 pull_number: pr.number
               });
 
-              const fileChanged = files.some(file => file.filename === filename);
-              if (fileChanged) {
-                prsWithFileChanges.push(`PR #${pr.number}: ${pr.title}`);
+              for (const targetFile of parsedOptions.files) {
+                const fileChanged = files.some(file => file.filename === targetFile);
+                if (fileChanged) {
+                  prsWithFileChanges.push(`PR #${pr.number}: ${pr.title}`);
+                }
               }
             }
 
