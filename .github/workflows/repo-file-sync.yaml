@@ -46,7 +46,7 @@ jobs:
           git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
 
           # Copy the specified files
-          FILES=${{ fromJSON(matrix.settings).files }}
+          FILES=${{ toJSON(fromJSON(matrix.settings).files) }}
           for FILE in $FILES; do
             echo "Copying $FILE from $REPO"
             cp "$REPO/$FILE" .
@@ -75,7 +75,7 @@ jobs:
             });
 
             const prsWithFileChanges = [];
-            // const changedFiles = new Set();
+            const changedFiles = new Set();
             for (const pr of pullRequests) {
               const { data: files } = await github.rest.pulls.listFiles({
                 owner: owner,
@@ -86,6 +86,7 @@ jobs:
               for (const targetFile of parsedOptions.files) {
                 const fileChanged = files.some(file => file.filename === targetFile);
                 if (fileChanged) {
+                  changedFiles.add(targetFile);
                   prsWithFileChanges.push(`${parsedOptions.repo}#${pr.number}: ${pr.title}`);
                 }
               }
@@ -96,12 +97,15 @@ jobs:
               console.log(prsWithFileChanges.join('\n'));
             } else {
               console.log('No open PRs with changes to ');
+            return {
+              changedFiles: changedFiles.join("\n");
+              description: prsWithFileChanges.join("\n");
             }
-            return prsWithFileChanges.join("\n");
 
       - name: Commit changes
         run: |
-          git add .
+          echo "${{ fromJSON(steps.list_prs.outputs.result).changedFiles }}"
+          git add ${{ fromJSON(steps.list_prs.outputs.result).changedFiles }}
           git commit -m "Update file from source repository" || echo "No changes to commit"
           git push origin new-branch-${{ github.run_id }}
 
