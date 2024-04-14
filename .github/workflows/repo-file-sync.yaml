@@ -45,7 +45,6 @@ jobs:
           result-encoding: string
           script: |
             const parsedOptions = ${{ matrix.settings }};
-            console.log(parsedOptions);
             const [owner, repo] = parsedOptions.repo.split("/");
 
             const { data: pullRequests } = await github.rest.pulls.list({
@@ -53,6 +52,7 @@ jobs:
               repo: repo,
               state: 'all'
             });
+            console.log(pullRequests);
 
             const prsWithFileChanges = [];
             const changedFiles = new Set();
@@ -75,6 +75,9 @@ jobs:
             if (prsWithFileChanges.length > 0) {
               console.log('PRs with changes to:');
               console.log(prsWithFileChanges.join('\n'));
+              console.log(changedFiles);
+              console.log([...changedFiles].join('\n'));
+              console.log(Array.from(changedFiles).join('\n'));
             } else {
               console.log('No open PRs with changes to ');
             }
