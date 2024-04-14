@@ -85,7 +85,7 @@ jobs:
           script: |
             const parsedOptions = ${{ matrix.settings }};
             console.log(parsedOptions);
-            const [owner, repo] = parsedOptions.repo;
+            const [owner, repo] = parsedOptions.repo.split("/");
 
 
             const { data: pullRequests } = await github.rest.pulls.list({
