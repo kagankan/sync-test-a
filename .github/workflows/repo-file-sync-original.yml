@@ -1,5 +1,5 @@
 # .github/workflows/repo-file-sync.yaml
-name: Repo File Sync
+name: Repo File Sync Original
 on:
   workflow_dispatch: {}
   schedule:
