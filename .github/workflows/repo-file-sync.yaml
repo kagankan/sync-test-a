@@ -9,6 +9,13 @@ permissions:
   contents: write
 jobs:
   sync:
+    env:
+      SETTINGS: |
+        {
+          "kagankan/sync-test-b": [
+            "README.md",
+          ]
+        }
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,30 +27,42 @@ jobs:
           app_id: ${{ secrets.REPO_FILE_SYNC_APP_ID }}
           private_key: ${{ secrets.REPO_FILE_SYNC_PRIVATE_KEY }}
 
-      - name: Configure Git
+      - name: Setup
         run: |
           git config user.name "GitHub App Bot"
           git config user.email "<email@domain.com>"
-
-      - name: Create a new branch in Repository A
-        run: |
           git checkout -b new-branch-${{ github.run_id }}
-          # git pull https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/kagankan/sync-test-b.git ${GITHUB_SHA}
 
-      - name: Clone Repository B and get recent merges
+      # - name: Clone Repository B and get recent merges
+      #   run: |
+      #     git clone https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/kagankan/sync-test-b.git
+      #     # cd sync-test-b
+      #     # git log --since="24 hours ago" --merges --pretty=format:"%H"
+      #     tree
+      #     cp sync-test-b/README.md README.md
+      #     rm sync-test-b -rf
+      #     tree
+      #   id: log
+      - name: Clone and Sync Repositories
         run: |
-          git clone https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/kagankan/sync-test-b.git
-          # cd sync-test-b
-          # git log --since="24 hours ago" --merges --pretty=format:"%H"
+          SETTINGS_JSON=$SETTINGS
+          REPOS=$(echo "$SETTINGS_JSON" | jq -r 'keys[]')
+          for REPO in $REPOS; do
+            # Clone the repository
+            echo "Cloning $REPO"
+            git clone https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
+
+            # Copy the specified files
+            FILES=$(echo "$SETTINGS_JSON" | jq -r ".[\"$REPO\"][]")
+            for FILE in $FILES; do
+              echo "Copying $FILE from $REPO"
+              cp "$REPO/$FILE" .
+            done
+
+            # Clean up the cloned repository directory
+            rm -rf $REPO
+          done
           tree
-          cp sync-test-b/README.md README.md
-          rm sync-test-b -rf
-          tree
-        id: log
-
-
-
-
       # - name: Sync file from source repository
       #   run: |
       #     curl -H "Authorization: token ${{ steps.generate_token.outputs.token }}" \
