@@ -52,8 +52,9 @@ jobs:
       - name: Clone and Sync Repositories
         run: |
           # Clone the repository
-          echo "${{ steps.settings_obj.outputs.result }}"
-          REPO=${{ steps.settings_obj.outputs.result.repo }}
+          echo "${{ toJSON(matrix.settings) }}"
+          echo "${{ toJSON(matrix.settings).repo }}"
+          REPO=${{ toJSON(matrix.settings).repo }}
           echo "Cloning $REPO"
           git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
 
