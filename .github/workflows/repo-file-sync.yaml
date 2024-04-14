@@ -57,10 +57,9 @@ jobs:
         run: |
           git add .
           git commit -m "Update file from source repository" || echo "No changes to commit"
-          git push
+          git push origin new-branch-${{ github.run_id }}
       # - name: Push changes to the new branch
       #   run: |
-      #     git push origin new-branch-${{ github.run_id }}
 
       - name: Create Pull Request
         uses: repo-sync/pull-request@v2
