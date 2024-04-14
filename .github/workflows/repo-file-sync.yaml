@@ -43,25 +43,29 @@ jobs:
           git config user.email "<email@domain.com>"
           git checkout -b new-branch-${{ github.run_id }}
 
+      - name: settings_obj
+        uses: actions/github-script@v6
+        id: settings_obj
+        with:
+          script:
+            return ${{ matrix.settings }};
       - name: Clone and Sync Repositories
         run: |
-          SETTINGS_JSON=$SETTINGS
-          REPOS=$(echo "$SETTINGS_JSON" | jq -r 'keys[]')
-          for REPO in $REPOS; do
-            # Clone the repository
-            echo "Cloning $REPO"
-            git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
+          # Clone the repository
+          REPO=${{ steps.settings_obj.outputs.result.repo }}
+          echo "Cloning $REPO"
+          git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
 
-            # Copy the specified files
-            FILES=$(echo "$SETTINGS_JSON" | jq -r ".[\"$REPO\"][]")
-            for FILE in $FILES; do
-              echo "Copying $FILE from $REPO"
-              cp "$REPO/$FILE" .
-            done
-
-            # Clean up the cloned repository directory
-            rm -rf $REPO
+          # Copy the specified files
+          FILES=${{ steps.settings_obj.outputs.result.files }}
+          for FILE in $FILES; do
+            echo "Copying $FILE from $REPO"
+            cp "$REPO/$FILE" .
           done
+
+          # Clean up the cloned repository directory
+          rm -rf $REPO
+     
           tree
 
       - name: List PRs with changes to specific file
