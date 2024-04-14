@@ -81,6 +81,7 @@ jobs:
             } else {
               console.log('No open PRs with changes to ');
             }
+            core.setOutput('changedFiles', Array.from(changedFiles).join('\n'));
             return {
               changedFiles: [...changedFiles].join("\n"),
               description: prsWithFileChanges.join("\n"),
@@ -90,6 +91,7 @@ jobs:
         run: |
           echo "${{ steps.list_prs.outputs.result.changedFiles }}"
           echo "${{ toJSON(steps.list_prs.outputs.result) }}"
+          echo "$changedFiles"
           # Clone the repository
           echo "${{ fromJSON(matrix.settings).repo }}"
           REPO=${{ fromJSON(matrix.settings).repo }}
