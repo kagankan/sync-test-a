@@ -9,6 +9,17 @@ permissions:
   contents: write
 jobs:
   sync:
+    strategy:
+      matrix:
+        settings:           
+          -  |
+             {
+                "repo": "kagankan/sync-test-b",
+                "files": [
+                  "README.md"
+                ]
+             }
+          # - 'path/to/second/file.txt'
     env:
       SETTINGS: |
         {
@@ -67,6 +78,43 @@ jobs:
       #   run: |
       #     curl -H "Authorization: token ${{ steps.generate_token.outputs.token }}" \
       #     https://api.github.com/repos/kagankan/sync-test-b/contents/README.md > README.md
+
+      - name: List PRs with changes to specific file
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const parsedOptions = JSON.parse(${{ matrix.file }});
+            console.log(parsedOptions);
+            const [owner, repo] = parsedOptions.repo;
+
+
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: owner,
+              repo: repo,
+              state: 'all'
+            });
+
+            const prsWithFileChanges = [];
+            // const changedFiles = new Set();
+            for (const pr of pullRequests) {
+              const { data: files } = await github.rest.pulls.listFiles({
+                owner: owner,
+                repo: repo,
+                pull_number: pr.number
+              });
+
+              const fileChanged = files.some(file => file.filename === filename);
+              if (fileChanged) {
+                prsWithFileChanges.push(`PR #${pr.number}: ${pr.title}`);
+              }
+            }
+
+            if (prsWithFileChanges.length > 0) {
+              console.log('PRs with changes to ' + filename + ':');
+              console.log(prsWithFileChanges.join('\n'));
+            } else {
+              console.log('No open PRs with changes to ');
+            }
 
       - name: Commit changes
         run: |
