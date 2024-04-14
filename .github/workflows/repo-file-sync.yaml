@@ -33,8 +33,9 @@ jobs:
       - name: Clone Repository B and get recent merges
         run: |
           git clone https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/kagankan/sync-test-b.git
-          cd sync-test-b
-          git log --since="24 hours ago" --merges --pretty=format:"%H"
+          # cd sync-test-b
+          # git log --since="24 hours ago" --merges --pretty=format:"%H"
+          cp sync-test-b/README.md README.md
         id: log
 
       - name: Create a new branch in Repository A
