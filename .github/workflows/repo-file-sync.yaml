@@ -93,7 +93,7 @@ jobs:
           FILES="${{ steps.list_prs.outputs.changedFiles }}"
           for FILE in $FILES; do
             echo "Copying $FILE from $REPO"
-            cp "$REPO/$FILE" .
+            cp -r "$REPO/$FILE" .
           done
           # Clean up the cloned repository directory
           rm -rf $REPO
