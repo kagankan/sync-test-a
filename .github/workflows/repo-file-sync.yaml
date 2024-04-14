@@ -37,23 +37,16 @@ jobs:
           git config user.email "<email@domain.com>"
           git checkout -b new-branch-${{ github.run_id }}
 
-      - name: settings_obj
-        uses: actions/github-script@v6
-        id: settings_obj
-        with:
-          script:
-            return ${{ matrix.settings }};
       - name: Clone and Sync Repositories
         run: |
           # Clone the repository
-          echo "${{ fromJSON(matrix.settings) }}"
           echo "${{ fromJSON(matrix.settings).repo }}"
           REPO=${{ fromJSON(matrix.settings).repo }}
           echo "Cloning $REPO"
           git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
 
           # Copy the specified files
-          FILES=${{ steps.settings_obj.outputs.result.files }}
+          FILES=${{ fromJSON(matrix.settings).files }}
           for FILE in $FILES; do
             echo "Copying $FILE from $REPO"
             cp "$REPO/$FILE" .
