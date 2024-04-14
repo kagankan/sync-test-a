@@ -9,7 +9,8 @@ on:
 defaults:
   run:
     shell: bash
-
+permissions:
+  contents: write
 jobs:
   sync:
     runs-on: ubuntu-latest
