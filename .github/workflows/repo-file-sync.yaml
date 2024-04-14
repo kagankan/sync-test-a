@@ -85,7 +85,7 @@ jobs:
 
       - name: Clone and Sync Repositories
         run: |
-          echo "${{ steps.list_prs.outputs.result }}"
+          echo "${{ steps.list_prs.outputs.result.changedFiles }}"
           echo "${{ toJSON(steps.list_prs.outputs.result) }}"
           # Clone the repository
           echo "${{ fromJSON(matrix.settings).repo }}"
