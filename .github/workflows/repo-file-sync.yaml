@@ -38,11 +38,10 @@ jobs:
           private_key: ${{ secrets.REPO_FILE_SYNC_PRIVATE_KEY }}
 
       - name: List PRs with changes to specific file
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         id: list_prs
         with:
           github-token: ${{ steps.generate_token.outputs.token }}
-          result-encoding: string
           script: |
             const parsedOptions = ${{ matrix.settings }};
             const [owner, repo] = parsedOptions.repo.split("/");
@@ -50,11 +49,10 @@ jobs:
             const { data: pullRequests } = await github.rest.pulls.list({
               owner: owner,
               repo: repo,
-              state: 'all'
+              state: 'all' // TODO: mergedだけに
             });
-            console.log(pullRequests);
 
-            const prsWithFileChanges = [];
+            const prsWithFileChanges = new Set();
             const changedFiles = new Set();
             for (const pr of pullRequests) {
               const { data: files } = await github.rest.pulls.listFiles({
@@ -67,33 +65,22 @@ jobs:
                 const fileChanged = files.some(file => file.filename === targetFile);
                 if (fileChanged) {
                   changedFiles.add(targetFile);
-                  prsWithFileChanges.push(`${parsedOptions.repo}#${pr.number}: ${pr.title}`);
+                  prsWithFileChanges.add(`${parsedOptions.repo}#${pr.number}: ${pr.title}`);
                 }
               }
             }
 
             if (prsWithFileChanges.length > 0) {
-              console.log('PRs with changes to:');
-              console.log(prsWithFileChanges.join('\n'));
-              console.log(changedFiles);
-              console.log([...changedFiles].join('\n'));
-              console.log(Array.from(changedFiles).join('\n'));
+              console.log('Changes found');
             } else {
-              console.log('No open PRs with changes to ');
+              console.log('No changes');
             }
             core.setOutput('changedFiles', Array.from(changedFiles).join('\n'));
-            return {
-              changedFiles: [...changedFiles].join("\n"),
-              description: prsWithFileChanges.join("\n"),
-            }
+            core.setOutput('description', Array.from(prsWithFileChanges).join("\n"));
 
       - name: Clone and Sync Repositories
         run: |
-          echo "${{ steps.list_prs.outputs.result.changedFiles }}"
-          echo "${{ toJSON(steps.list_prs.outputs.result) }}"
-          echo "${{ steps.list_prs.outputs.changedFiles }}"
           # Clone the repository
-          echo "${{ fromJSON(matrix.settings).repo }}"
           REPO=${{ fromJSON(matrix.settings).repo }}
           echo "Cloning $REPO"
           git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
@@ -123,4 +110,4 @@ jobs:
           pr_title: "Update from source repository"
           pr_body: |
             Automated PR to update the specified file.
-            ${{ steps.list_prs.outputs.result }}
+            ${{ steps.list_prs.outputs.description }}
