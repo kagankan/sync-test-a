@@ -49,9 +49,7 @@ jobs:
             const { data: pullRequests } = await github.rest.pulls.list({
               owner: owner,
               repo: repo,
-              state: 'closed',
-              sort: 'created',
-              direction: 'desc'
+              state: 'closed'
             });
 
             const sinceDate = new Date(Date.now() - 24 * 60 * 60 * 1000);  // 24 hours ago
