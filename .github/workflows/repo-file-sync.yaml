@@ -50,7 +50,7 @@ jobs:
           for REPO in $REPOS; do
             # Clone the repository
             echo "Cloning $REPO"
-            git clone https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
+            git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
 
             # Copy the specified files
             FILES=$(echo "$SETTINGS_JSON" | jq -r ".[\"$REPO\"][]")
