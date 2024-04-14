@@ -81,8 +81,10 @@ jobs:
 
       - name: List PRs with changes to specific file
         uses: actions/github-script@v6
+        id: list_prs
         with:
           github-token: ${{ steps.generate_token.outputs.token }}
+          result-encoding: string
           script: |
             const parsedOptions = ${{ matrix.settings }};
             console.log(parsedOptions);
@@ -106,7 +108,7 @@ jobs:
               for (const targetFile of parsedOptions.files) {
                 const fileChanged = files.some(file => file.filename === targetFile);
                 if (fileChanged) {
-                  prsWithFileChanges.push(`PR #${pr.number}: ${pr.title}`);
+                  prsWithFileChanges.push(`${parsedOptions.repo}#${pr.number}: ${pr.title}`);
                 }
               }
             }
@@ -117,6 +119,7 @@ jobs:
             } else {
               console.log('No open PRs with changes to ');
             }
+            return prsWithFileChanges.join("\n");
 
       - name: Commit changes
         run: |
@@ -133,4 +136,6 @@ jobs:
           destination_branch: "main"
           source_branch: new-branch-${{ github.run_id }}
           pr_title: "Update from source repository"
-          pr_body: "Automated PR to update the specified file."
+          pr_body: |
+            Automated PR to update the specified file.
+            ${{ steps.list_prs.outputs.result }}
