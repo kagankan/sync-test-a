@@ -79,7 +79,7 @@ jobs:
               console.log('No open PRs with changes to ');
             }
             return {
-              changedFiles: changedFiles.join("\n"),
+              changedFiles: [...changedFiles].join("\n"),
               description: prsWithFileChanges.join("\n"),
             }
 
