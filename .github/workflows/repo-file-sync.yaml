@@ -37,26 +37,6 @@ jobs:
           app_id: ${{ secrets.REPO_FILE_SYNC_APP_ID }}
           private_key: ${{ secrets.REPO_FILE_SYNC_PRIVATE_KEY }}
 
-      - name: Clone and Sync Repositories
-        run: |
-          # Clone the repository
-          echo "${{ fromJSON(matrix.settings).repo }}"
-          REPO=${{ fromJSON(matrix.settings).repo }}
-          echo "Cloning $REPO"
-          git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
-
-          # Copy the specified files
-          FILES=${{ toJSON(fromJSON(matrix.settings).files) }}
-          for FILE in $FILES; do
-            echo "Copying $FILE from $REPO"
-            cp "$REPO/$FILE" .
-          done
-
-          # Clean up the cloned repository directory
-          rm -rf $REPO
-     
-          tree
-
       - name: List PRs with changes to specific file
         uses: actions/github-script@v6
         id: list_prs
@@ -102,9 +82,30 @@ jobs:
               description: prsWithFileChanges.join("\n");
             }
 
-      - name: Commit changes
+      - name: Clone and Sync Repositories
         run: |
           echo "${{ fromJSON(steps.list_prs.outputs.result).changedFiles }}"
+          # Clone the repository
+          echo "${{ fromJSON(matrix.settings).repo }}"
+          REPO=${{ fromJSON(matrix.settings).repo }}
+          echo "Cloning $REPO"
+          git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
+
+          # Copy the specified files
+          FILES=${{ fromJSON(steps.list_prs.outputs.result).changedFiles }}
+          for FILE in $FILES; do
+            echo "Copying $FILE from $REPO"
+            cp "$REPO/$FILE" .
+          done
+
+          # Clean up the cloned repository directory
+          rm -rf $REPO
+     
+          tree
+
+      - name: Commit changes
+        run: |
+          
           git add ${{ fromJSON(steps.list_prs.outputs.result).changedFiles }}
           git commit -m "Update file from source repository" || echo "No changes to commit"
           git push origin new-branch-${{ github.run_id }}
