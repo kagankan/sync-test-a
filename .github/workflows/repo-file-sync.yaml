@@ -15,9 +15,9 @@ jobs:
           -  |
              {
                 "repo": "kagankan/sync-test-b",
-                "files": [
+                "paths": [
                   "README.md",
-                  "test/test.md"
+                  "test"
                 ]
              }
     runs-on: ubuntu-latest
@@ -66,8 +66,8 @@ jobs:
                 pull_number: pr.number
               });
 
-              for (const targetFile of parsedOptions.files) {
-                const fileChanged = files.some(file => file.filename === targetFile);
+              for (const targetPath of parsedOptions.paths) {
+                const fileChanged = files.some(file => file.filename.startsWith(targetPath));
                 if (fileChanged) {
                   changedFiles.add(targetFile);
                   prsWithFileChanges.add(`${parsedOptions.repo}#${pr.number}: ${pr.title}`);
