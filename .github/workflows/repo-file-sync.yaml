@@ -19,7 +19,6 @@ jobs:
                   "README.md"
                 ]
              }
-          # - 'path/to/second/file.txt'
     env:
       SETTINGS: |
         {
@@ -44,16 +43,6 @@ jobs:
           git config user.email "<email@domain.com>"
           git checkout -b new-branch-${{ github.run_id }}
 
-      # - name: Clone Repository B and get recent merges
-      #   run: |
-      #     git clone https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/kagankan/sync-test-b.git
-      #     # cd sync-test-b
-      #     # git log --since="24 hours ago" --merges --pretty=format:"%H"
-      #     tree
-      #     cp sync-test-b/README.md README.md
-      #     rm sync-test-b -rf
-      #     tree
-      #   id: log
       - name: Clone and Sync Repositories
         run: |
           SETTINGS_JSON=$SETTINGS
@@ -74,10 +63,6 @@ jobs:
             rm -rf $REPO
           done
           tree
-      # - name: Sync file from source repository
-      #   run: |
-      #     curl -H "Authorization: token ${{ steps.generate_token.outputs.token }}" \
-      #     https://api.github.com/repos/kagankan/sync-test-b/contents/README.md > README.md
 
       - name: List PRs with changes to specific file
         uses: actions/github-script@v6
@@ -126,8 +111,6 @@ jobs:
           git add .
           git commit -m "Update file from source repository" || echo "No changes to commit"
           git push origin new-branch-${{ github.run_id }}
-      # - name: Push changes to the new branch
-      #   run: |
 
       - name: Create Pull Request
         uses: repo-sync/pull-request@v2
