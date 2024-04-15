@@ -32,7 +32,8 @@ jobs:
           git config user.email "<email@domain.com>"
           git fetch
           git checkout -B file-sync/${{ fromJSON(matrix.settings).repo }} origin/file-sync/${{ fromJSON(matrix.settings).repo }} || git checkout -b file-sync/${{ fromJSON(matrix.settings).repo }}
-          git log -1 --format=%ci HEAD >> $GITHUB_OUTPUT
+          LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
+          echo "last_sync_at=$LAST_SYNC_AT" >> $GITHUB_OUTPUT
           git log -1 --format=%ci HEAD
 
       - name: Generate token
