@@ -14,7 +14,8 @@ jobs:
         settings:           
           -  |
              {
-                "repo": "kagankan/sync-test-b",
+                "owner": "kagankan",
+                "repo": "sync-test-b",
                 "paths": [
                   "README.md",
                   "test"
@@ -44,11 +45,10 @@ jobs:
           github-token: ${{ steps.generate_token.outputs.token }}
           script: |
             const parsedOptions = ${{ matrix.settings }};
-            const [owner, repo] = parsedOptions.repo.split("/");
-
+            
             const { data: pullRequests } = await github.rest.pulls.list({
-              owner: owner,
-              repo: repo,
+              owner: parsedOptions.owner,
+              repo: parsedOptions.repo,
               state: 'closed'
             });
 
@@ -61,8 +61,8 @@ jobs:
             const changedFiles = new Set();
             for (const pr of mergedPRs) {
               const { data: files } = await github.rest.pulls.listFiles({
-                owner: owner,
-                repo: repo,
+                owner: parsedOptions.owner,
+                repo: parsedOptions.repo,
                 pull_number: pr.number
               });
 
@@ -86,7 +86,7 @@ jobs:
       - name: Sync Repositories
         run: |
           # Clone the repository
-          REPO=${{ fromJSON(matrix.settings).repo }}
+          REPO=${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
           echo "Cloning $REPO"
           git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
           # Copy the specified files
