@@ -104,7 +104,7 @@ jobs:
           git commit -m "Update file from source repository" || echo "No changes to commit"
           git push origin file-sync/${{ fromJSON(matrix.settings).repo }}
           COMMIT_HASH=$(git rev-parse HEAD)
-          git checkout -b file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }}
+          git checkout -b file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }} origin/main
           git cherry-pick $COMMIT_HASH
           git push origin file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }}
 
