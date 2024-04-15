@@ -57,10 +57,9 @@ jobs:
               state: 'closed'
             });
 
-            const sinceDate = new Date("${{ steps.setup.outputs.last_sync_at }})");
-            console.log( "${{ steps.setup.outputs.last_sync_at }}")
+            const sinceDate = new Date("${{ steps.setup.outputs.last_sync_at }}");
 
-            // マージされたPRで、過去24時間以内にマージされたものをフィルタリング
+            // マージされたPRで、前回の反映以降にマージされたものをフィルタリング
             const mergedPRs = pullRequests.filter(pr => pr.merged_at && new Date(pr.merged_at) > sinceDate);
 
             const prsWithFileChanges = new Set();
