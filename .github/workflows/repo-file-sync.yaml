@@ -70,7 +70,7 @@ jobs:
                 const fileChanged = files.some(file => file.filename.startsWith(targetPath));
                 if (fileChanged) {
                   changedFiles.add(targetPath);
-                  prsWithFileChanges.add(`${parsedOptions.repo}#${pr.number}: ${pr.title}`);
+                  prsWithFileChanges.add(`${parsedOptions.owner}/${parsedOptions.repo}#${pr.number}: ${pr.title}`);
                 }
               }
             }
