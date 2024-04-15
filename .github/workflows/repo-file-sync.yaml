@@ -103,11 +103,15 @@ jobs:
           git add .
           git commit -m "Update file from source repository" || echo "No changes to commit"
           git push origin file-sync/${{ fromJSON(matrix.settings).repo }}
+          COMMIT_HASH=$(git rev-parse HEAD)
+          git checkout -b file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }}
+          git cherry-pick $COMMIT_HASH
+          git push origin file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }}
 
       - name: Create Pull Request
         run: |
           gh pr create \
-          -B main -H file-sync/${{ fromJSON(matrix.settings).repo }} \
+          -B main -H file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }} \
           --title '取り込み' \
           --body '自動生成の取り込みです。マージするかクローズしてください。
             ## 関連PR
