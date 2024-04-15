@@ -90,6 +90,7 @@ jobs:
             core.setOutput('description', Array.from(prsWithFileChanges).join("\n"));
 
       - name: Sync Repositories
+        if: ${{ steps.list_prs.outputs.changedFiles != '' }}
         run: |
           # Clone the repository
           REPO=${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
@@ -113,6 +114,7 @@ jobs:
           git push origin file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }}
 
       - name: Create Pull Request
+        if: ${{ steps.list_prs.outputs.changedFiles != '' }}
         run: |
           gh pr create \
           -B main -H file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }} \
