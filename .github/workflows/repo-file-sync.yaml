@@ -29,8 +29,8 @@ jobs:
         run: |
           git config user.name "GitHub App Bot"
           git config user.email "<email@domain.com>"
-          git checkout -b file-sync/${{ fromJSON(matrix.settings).repo }}
-          git pull
+          git checkout -B file-sync/${{ fromJSON(matrix.settings).repo }} origin/file-sync/${{ fromJSON(matrix.settings).repo }} || git checkout -b file-sync/${{ fromJSON(matrix.settings).repo }}
+
 
       - name: Generate token
         id: generate_token
