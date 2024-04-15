@@ -26,12 +26,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup
+        id: setup
         run: |
           git config user.name "GitHub App Bot"
           git config user.email "<email@domain.com>"
           git fetch
           git checkout -B file-sync/${{ fromJSON(matrix.settings).repo }} origin/file-sync/${{ fromJSON(matrix.settings).repo }} || git checkout -b file-sync/${{ fromJSON(matrix.settings).repo }}
-
+          git log -1 --format=%ci HEAD >> $GITHUB_OUTPUT
+          git log -1 --format=%ci HEAD
 
       - name: Generate token
         id: generate_token
@@ -55,6 +57,7 @@ jobs:
             });
 
             const sinceDate = new Date(Date.now() - 24 * 60 * 60 * 1000);  // 24 hours ago
+            console.log( ${{ steps.setup.outputs }})
 
             // マージされたPRで、過去24時間以内にマージされたものをフィルタリング
             const mergedPRs = pullRequests.filter(pr => pr.merged_at && new Date(pr.merged_at) > sinceDate);
@@ -62,6 +65,7 @@ jobs:
             const prsWithFileChanges = new Set();
             const changedFiles = new Set();
             for (const pr of mergedPRs) {
+              console.log(pr.merged_at);
               const { data: files } = await github.rest.pulls.listFiles({
                 owner: parsedOptions.owner,
                 repo: parsedOptions.repo,
