@@ -34,7 +34,7 @@ jobs:
           git checkout -B file-sync/${{ fromJSON(matrix.settings).repo }} origin/file-sync/${{ fromJSON(matrix.settings).repo }} || git checkout -b file-sync/${{ fromJSON(matrix.settings).repo }}
           LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
           echo "last_sync_at=$LAST_SYNC_AT" >> $GITHUB_OUTPUT
-          git log -1 --format=%ci HEAD
+          echo $LAST_SYNC_AT
 
       - name: Generate token
         id: generate_token
@@ -58,7 +58,7 @@ jobs:
             });
 
             const sinceDate = new Date(Date.now() - 24 * 60 * 60 * 1000);  // 24 hours ago
-            console.log( ${{ steps.setup.outputs }})
+            console.log( ${{ steps.setup.outputs.last_sync_at }})
 
             // マージされたPRで、過去24時間以内にマージされたものをフィルタリング
             const mergedPRs = pullRequests.filter(pr => pr.merged_at && new Date(pr.merged_at) > sinceDate);
