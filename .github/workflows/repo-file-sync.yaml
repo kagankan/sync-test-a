@@ -29,7 +29,8 @@ jobs:
         run: |
           git config user.name "GitHub App Bot"
           git config user.email "<email@domain.com>"
-          git checkout -b new-branch-${{ github.run_id }}
+          git checkout -b file-sync/${{ fromJSON(matrix.settings).repo }}
+          git pull
 
       - name: Generate token
         id: generate_token
@@ -100,12 +101,12 @@ jobs:
      
           git add .
           git commit -m "Update file from source repository" || echo "No changes to commit"
-          git push origin new-branch-${{ github.run_id }}
+          git push origin file-sync/${{ fromJSON(matrix.settings).repo }}
 
       - name: Create Pull Request
         run: |
           gh pr create \
-          -B main -H new-branch-${{ github.run_id }} \
+          -B main -H file-sync/${{ fromJSON(matrix.settings).repo }} \
           --title '取り込み' \
           --body '自動生成の取り込みです。マージするかクローズしてください。
             ## 関連PR
