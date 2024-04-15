@@ -108,7 +108,7 @@ jobs:
           -B main 
           -H new-branch-${{ github.run_id }} 
           --title '取り込み' 
-          --body '自動生成の取り込みです。マージするかクローズしてください。\n
+          --body '自動生成の取り込みです。マージするかクローズしてください。
             ## 関連PR
             ${{ steps.list_prs.outputs.description }}'
         env:
