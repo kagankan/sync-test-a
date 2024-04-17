@@ -18,7 +18,7 @@ jobs:
                 "repo": "sync-test-b",
                 "paths": [
                   "README.md",
-                  "test"
+                  "test/*.md"
                 ]
              }
     runs-on: ubuntu-latest
@@ -62,17 +62,21 @@ jobs:
             // マージされたPRで、前回の反映以降にマージされたものをフィルタリング
             const mergedPRs = pullRequests.filter(pr => pr.merged_at && new Date(pr.merged_at) > sinceDate);
 
+            // 対象ファイルをリスト化
+            const globber = await glob.create(parsedOptions.paths.join('\n'), {followSymbolicLinks: false});
+            const files = await globber.glob();
+            console.log(files);
+
             const prsWithFileChanges = new Set();
             const changedFiles = new Set();
             for (const pr of mergedPRs) {
-              console.log(pr.merged_at);
               const { data: files } = await github.rest.pulls.listFiles({
                 owner: parsedOptions.owner,
                 repo: parsedOptions.repo,
                 pull_number: pr.number
               });
 
-              for (const targetPath of parsedOptions.paths) {
+              for (const targetPath of files) {
                 const fileChanged = files.some(file => file.filename.startsWith(targetPath));
                 if (fileChanged) {
                   changedFiles.add(targetPath);
