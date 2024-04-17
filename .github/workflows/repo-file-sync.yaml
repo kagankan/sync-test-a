@@ -59,12 +59,12 @@ jobs:
 
             const sinceDate = new Date("${{ steps.setup.outputs.last_sync_at }}");
 
-            // マージされたPRで、前回の反映以降にマージされたものをフィルタリング
+            // 前回の反映以降にマージされたPR
             const mergedPRs = pullRequests.filter(pr => pr.merged_at && new Date(pr.merged_at) > sinceDate);
 
             // 対象ファイルをリスト化
             const globber = await glob.create(parsedOptions.paths.join('\n'), {followSymbolicLinks: false});
-            const files = (await globber.glob()).map((file) => file.replace(`${process.env.GITHUB_WORKSPACE}/`, ''));
+            const targetFiles = (await globber.glob()).map((file) => file.replace(`${process.env.GITHUB_WORKSPACE}/`, ''));
             console.log(files);
 
             const prsWithFileChanges = new Set();
@@ -76,7 +76,7 @@ jobs:
                 pull_number: pr.number
               });
 
-              for (const targetPath of files) {
+              for (const targetPath of targetFiles) {
                 const fileChanged = files.some(file => file.filename === targetPath);
                 if (fileChanged) {
                   changedFiles.add(targetPath);
