@@ -98,13 +98,13 @@ jobs:
         run: |
           # Clone the repository
           REPO=${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
-          echo "Cloning $REPO"
           git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
           # Copy the specified files
           FILES="${{ steps.list_prs.outputs.changedFiles }}"
           for FILE in $FILES; do
             echo "Copying $FILE from $REPO"
-            cp -r "$REPO/$FILE" .
+            mkdir -p $(dirname "$FILE")
+            cp -r "$REPO/$FILE" "$FILE"
           done
           # Clean up the cloned repository directory
           rm -rf $REPO
