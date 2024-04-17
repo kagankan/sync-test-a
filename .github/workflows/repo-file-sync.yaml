@@ -64,7 +64,7 @@ jobs:
 
             // 対象ファイルをリスト化
             const globber = await glob.create(parsedOptions.paths.join('\n'), {followSymbolicLinks: false});
-            const files = (await globber.glob()).map((file) => file.replace(`${process.env.GITHUB_WORKSPACE}/`));
+            const files = (await globber.glob()).map((file) => file.replace(`${process.env.GITHUB_WORKSPACE}/`, ''));
             console.log(files);
 
             const prsWithFileChanges = new Set();
