@@ -92,7 +92,17 @@ jobs:
             }
             core.setOutput('changedFiles', Array.from(changedFiles).join('\n'));
             core.setOutput('description', Array.from(prsWithFileChanges).join("\n"));
-
+      - name: チェックアウトテスト
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
+          token: ${{ steps.generate_token.outputs.token }}
+      - name: チェック
+        run: |
+          tree
+          cwd
+          cd ../
+          tree
       - name: Sync Repositories
         if: ${{ steps.list_prs.outputs.changedFiles != '' }}
         run: |
