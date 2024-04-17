@@ -77,7 +77,7 @@ jobs:
               });
 
               for (const targetPath of files) {
-                const fileChanged = files.some(file => file.filename.startsWith(targetPath));
+                const fileChanged = files.some(file => file.filename === targetPath);
                 if (fileChanged) {
                   changedFiles.add(targetPath);
                   prsWithFileChanges.add(`${parsedOptions.owner}/${parsedOptions.repo}#${pr.number}: ${pr.title}`);
