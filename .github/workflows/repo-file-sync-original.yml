@@ -2,8 +2,8 @@
 name: Repo File Sync Original
 on:
   workflow_dispatch: {}
-  schedule:
-    - cron: '0 3 * * MON-FRI' # Run workflow at 12:00 JST every MON-FRI
+  # schedule:
+  #   - cron: '0 3 * * MON-FRI' # Run workflow at 12:00 JST every MON-FRI
 defaults:
   run:
     shell: bash
