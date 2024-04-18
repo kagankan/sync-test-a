@@ -16,10 +16,10 @@ jobs:
              {
                 "owner": "kagankan",
                 "repo": "sync-test-b",
-                "paths": `
-                  README.md
-                  test/*.md
-                `
+                "paths": [
+                  "README.md",
+                  "test/*.md"
+                ]
              }
     runs-on: ubuntu-latest
     steps:
@@ -63,7 +63,7 @@ jobs:
             const mergedPRs = pullRequests.filter(pr => pr.merged_at && new Date(pr.merged_at) > sinceDate);
 
             // 対象ファイルをリスト化
-            const globber = await glob.create(parsedOptions.paths, {followSymbolicLinks: false});
+            const globber = await glob.create(parsedOptions.paths.join('\n'), {followSymbolicLinks: false});
             const targetFiles = (await globber.glob()).map((file) => file.replace(`${process.env.GITHUB_WORKSPACE}/`, ''));
             console.log(targetFiles);
 
@@ -99,7 +99,7 @@ jobs:
           repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
           path: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
           sparse-checkout: |
-            ${{ fromJSON(matrix.settings).paths }}
+            ${{ join(fromJSON(matrix.settings).paths, '%0A') }}
           sparse-checkout-cone-mode: false 
       - name: チェック
         run: |
