@@ -98,7 +98,8 @@ jobs:
           token: ${{ steps.generate_token.outputs.token }}
           repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
           path: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
-          sparse-checkout: ${{ join(fromJSON(matrix.settings).paths, '\\n') }} ${{ toJSON(join(fromJSON(matrix.settings).paths, '\n')) }}
+          sparse-checkout: |
+            ${{ join(fromJSON(matrix.settings).paths, '\n') }} ${{ join(fromJSON(matrix.settings).paths, '\\n') }} ${{ toJSON(join(fromJSON(matrix.settings).paths, '\n')) }}
           sparse-checkout-cone-mode: false 
       - name: チェック
         run: |
