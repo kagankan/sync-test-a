@@ -100,7 +100,7 @@ jobs:
       - name: チェック
         run: |
           tree
-          cwd
+          echo "$PWD"
           cd ../
           tree
       - name: Sync Repositories
