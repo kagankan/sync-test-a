@@ -95,12 +95,13 @@ jobs:
       - name: チェックアウトテスト
         uses: actions/checkout@v4
         with:
-          repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
           token: ${{ steps.generate_token.outputs.token }}
+          repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
+          path: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
       - name: チェック
         run: |
-          tree
           echo "$PWD"
+          tree
           cd ../
           tree
       - name: Sync Repositories
