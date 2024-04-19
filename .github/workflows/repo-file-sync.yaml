@@ -101,7 +101,8 @@ jobs:
           token: ${{ steps.generate_token.outputs.token }}
           repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
           path: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
-          sparse-checkout: ${{ steps.list_prs.outputs.changedFiles }}
+          sparse-checkout: |
+            ${{ steps.list_prs.outputs.changedFiles }}
           sparse-checkout-cone-mode: false 
       - name: チェック
         run: |
