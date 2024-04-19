@@ -50,7 +50,7 @@ jobs:
         id: format
         with:
           script: |
-            core.setOutput('targetPaths', ${{ matrix.settings }}.path.join('\n'));
+            core.setOutput('targetPaths', ${{ matrix.settings }}.paths.join('\n'));
       - name: 対象ファイルをチェックアウト
         uses: actions/checkout@v4
         with:
