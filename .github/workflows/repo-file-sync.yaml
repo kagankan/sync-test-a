@@ -101,19 +101,15 @@ jobs:
           token: ${{ steps.generate_token.outputs.token }}
           repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
           path: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
-          sparse-checkout: |
-            ${{ steps.list_prs.outputs.targetPaths }}
+          sparse-checkout: ${{ steps.list_prs.outputs.changedFiles }}
           sparse-checkout-cone-mode: false 
       - name: チェック
         run: |
           echo "$PWD"
           tree
       - name: Sync Repositories
-        if: ${{ steps.list_prs.outputs.changedFiles != '' }}
+        # if: ${{ steps.list_prs.outputs.changedFiles != '' }}
         run: |
-          # Clone the repository
-          REPO=${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
-          git clone --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
           # Copy the specified files
           FILES="${{ steps.list_prs.outputs.changedFiles }}"
           for FILE in $FILES; do
@@ -121,6 +117,7 @@ jobs:
             mkdir -p $(dirname "$FILE")
             cp -r "$REPO/$FILE" "$FILE"
           done
+          tree
           # Clean up the cloned repository directory
           rm -rf $REPO
      
