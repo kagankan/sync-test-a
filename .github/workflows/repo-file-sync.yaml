@@ -97,30 +97,28 @@ jobs:
             core.setOutput('description', Array.from(prsWithFileChanges).join("\n"));
       - name: チェックアウトテスト
         uses: actions/checkout@v4
+        if: ${{ steps.list_prs.outputs.changedFiles != '' }}
         with:
           token: ${{ steps.generate_token.outputs.token }}
           repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
-          path: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
+          path: tmp
           sparse-checkout: |
             ${{ steps.list_prs.outputs.changedFiles }}
           sparse-checkout-cone-mode: false 
-      - name: チェック
-        run: |
-          echo "$PWD"
-          tree
       - name: Sync Repositories
-        # if: ${{ steps.list_prs.outputs.changedFiles != '' }}
+        if: ${{ steps.list_prs.outputs.changedFiles != '' }}
         run: |
           # Copy the specified files
           FILES="${{ steps.list_prs.outputs.changedFiles }}"
           for FILE in $FILES; do
             echo "Copying $FILE from $REPO"
+            # ディレクトリ内のファイルが追加されたときのためのmkdir
             mkdir -p $(dirname "$FILE")
             cp -r "$REPO/$FILE" "$FILE"
           done
           tree
           # Clean up the cloned repository directory
-          rm -rf $REPO
+          rm -rf tmp
      
           git add .
           git commit -m "Update file from source repository" || echo "No changes to commit"
