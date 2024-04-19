@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup
+      - name: 前回の同期時刻を取得
         id: setup
         run: |
           git config user.name "GitHub App Bot"
@@ -45,7 +45,20 @@ jobs:
         with:
           app_id: ${{ secrets.REPO_FILE_SYNC_APP_ID }}
           private_key: ${{ secrets.REPO_FILE_SYNC_PRIVATE_KEY }}
-
+      - name: 改行ありに変換
+        uses: actions/github-script@v7
+        id: format
+        with:
+          script: |
+            core.setOutput('targetPaths', ${{ matrix.settings }}.path.join('\n'));
+      - name: 対象ファイルをチェックアウト
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+          repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
+          path: tmp
+          sparse-checkout: ${{ steps.format.outputs.targetPaths }}
+          sparse-checkout-cone-mode: false 
       - name: List PRs with changes to specific file
         uses: actions/github-script@v7
         id: list_prs
@@ -65,11 +78,8 @@ jobs:
             // 前回の反映以降にマージされたPR
             const mergedPRs = pullRequests.filter(pr => pr.merged_at && new Date(pr.merged_at) > sinceDate);
 
-
-            core.setOutput('targetPaths', parsedOptions.paths.join('\n'));
-
             // 対象ファイルをリスト化
-            const globber = await glob.create(parsedOptions.paths.join('\n'), {followSymbolicLinks: false});
+            const globber = await glob.create("**/*", {followSymbolicLinks: false});
             const targetFiles = (await globber.glob()).map((file) => file.replace(`${process.env.GITHUB_WORKSPACE}/`, ''));
             console.log(targetFiles);
 
@@ -98,15 +108,7 @@ jobs:
             }
             core.setOutput('changedFiles', Array.from(changedFiles).join('\n'));
             core.setOutput('description', Array.from(prsWithFileChanges).join("\n"));
-      - name: チェックアウトテスト
-        uses: actions/checkout@v4
-        if: ${{ steps.list_prs.outputs.changedFiles != '' }}
-        with:
-          token: ${{ steps.generate_token.outputs.token }}
-          repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
-          path: tmp
-          sparse-checkout: ${{ steps.list_prs.outputs.changedFiles }}
-          sparse-checkout-cone-mode: false 
+
       - name: Sync Repositories
         if: ${{ steps.list_prs.outputs.changedFiles != '' }}
         run: |
@@ -116,8 +118,8 @@ jobs:
             echo "Copying $FILE from $REPO"
             # ディレクトリ内のファイルが追加されたときのためのmkdir
             mkdir -p $(dirname "$FILE")
-            cp -r "tmp/$FILE" "$FILE"
           done
+          cp -r tmp .
           tree
           # Clean up the cloned repository directory
           rm -rf tmp
