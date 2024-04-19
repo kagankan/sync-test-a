@@ -102,8 +102,7 @@ jobs:
           token: ${{ steps.generate_token.outputs.token }}
           repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
           path: tmp
-          sparse-checkout: |
-            ${{ steps.list_prs.outputs.changedFiles }}
+          sparse-checkout: ${{ steps.list_prs.outputs.changedFiles }}
           sparse-checkout-cone-mode: false 
       - name: Sync Repositories
         if: ${{ steps.list_prs.outputs.changedFiles != '' }}
@@ -137,6 +136,7 @@ jobs:
           --body '自動生成の取り込みです。マージするかクローズしてください。
             ## 関連PR
             ${{ steps.list_prs.outputs.description }}'
+          # TODO: レビュアー設定
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         
