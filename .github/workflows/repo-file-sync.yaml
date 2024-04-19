@@ -132,6 +132,7 @@ jobs:
           git cherry-pick $COMMIT_HASH
           git push origin $FILE_SYNC_BRANCH_NEW
 
+      # TODO: コンフリクトした場合は、機械的な解消は無理なので、「コンフリクトしました」の旨だけPRで知らせる
       - name: Create Pull Request
         if: ${{ steps.list_prs.outputs.changedFiles != '' }}
         run: |
