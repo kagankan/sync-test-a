@@ -9,6 +9,7 @@ permissions:
   contents: write
 jobs:
   sync:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         settings:           
@@ -21,7 +22,9 @@ jobs:
                   "test/*.md"
                 ]
              }
-    runs-on: ubuntu-latest
+    env:
+      FILE_SYNC_BRANCH_BASE: file-sync/${{ fromJSON(matrix.settings).repo }}
+      FILE_SYNC_BRANCH_NEW: file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4
 
@@ -31,7 +34,7 @@ jobs:
           git config user.name "GitHub App Bot"
           git config user.email "<email@domain.com>"
           git fetch
-          git checkout -B file-sync/${{ fromJSON(matrix.settings).repo }} origin/file-sync/${{ fromJSON(matrix.settings).repo }} || git checkout -b file-sync/${{ fromJSON(matrix.settings).repo }}
+          git checkout -B $FILE_SYNC_BRANCH_BASE origin/$FILE_SYNC_BRANCH_BASE || git checkout -b $FILE_SYNC_BRANCH_BASE
           LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
           echo "last_sync_at=$LAST_SYNC_AT" >> $GITHUB_OUTPUT
           echo $LAST_SYNC_AT
@@ -121,11 +124,11 @@ jobs:
      
           git add .
           git commit -m "Update file from source repository" || echo "No changes to commit"
-          git push origin file-sync/${{ fromJSON(matrix.settings).repo }}
+          git push origin $FILE_SYNC_BRANCH_BASE
           COMMIT_HASH=$(git rev-parse HEAD)
-          git checkout -b file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }} origin/main
+          git checkout -b $FILE_SYNC_BRANCH_NEW origin/main
           git cherry-pick $COMMIT_HASH
-          git push origin file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }}
+          git push origin $FILE_SYNC_BRANCH_NEW
 
       - name: Create Pull Request
         if: ${{ steps.list_prs.outputs.changedFiles != '' }}
