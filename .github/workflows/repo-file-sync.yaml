@@ -132,11 +132,11 @@ jobs:
         run: |
           gh pr create \
           -B main -H file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }} \
+          --reviewer kagankan \
           --title '取り込み' \
           --body '自動生成の取り込みです。マージするかクローズしてください。
             ## 関連PR
             ${{ steps.list_prs.outputs.description }}'
-          # TODO: レビュアー設定
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         
