@@ -136,7 +136,7 @@ jobs:
         if: ${{ steps.list_prs.outputs.changedFiles != '' }}
         run: |
           gh pr create \
-          -B main -H file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }} \
+          -B main -H $FILE_SYNC_BRANCH_NEW \
           --reviewer kagankan \
           --title '取り込み' \
           --body '自動生成の取り込みです。マージするかクローズしてください。
