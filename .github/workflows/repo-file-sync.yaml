@@ -24,6 +24,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: 開業ありのテキストに
+        uses: actions/github-script@v7
+        id: format
+        with:
+          script:
+            core.setOutput('targetPaths', ${{ fromJSON(matrix.settings).paths }}.join('\n'));
 
       - name: Setup
         id: setup
@@ -99,7 +105,7 @@ jobs:
           repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
           path: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
           sparse-checkout: |
-            ${{ join(fromJSON(matrix.settings).paths, '%0A') }}
+            ${{ steps.format.outputs.targetPaths }}
           sparse-checkout-cone-mode: false 
       - name: チェック
         run: |
