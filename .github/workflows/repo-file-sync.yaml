@@ -83,6 +83,8 @@ jobs:
             const targetFiles = (await globber.glob()).map((file) => file.replace(`${process.env.GITHUB_WORKSPACE}/`, ''));
             console.log(targetFiles);
 
+            // TODO: 削除ファイルの対応
+
             const prsWithFileChanges = new Set();
             const changedFiles = new Set();
             for (const pr of mergedPRs) {
