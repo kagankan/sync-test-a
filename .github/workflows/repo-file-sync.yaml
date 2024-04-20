@@ -118,6 +118,7 @@ jobs:
         continue-on-error: true
         if: ${{ steps.pulls.outputs.merged_pulls != '' }}
         run: |
+          tree -a -I .git
           # // TODO: 新規追加ファイルの対応
           # // TODO: 削除ファイルの対応
             # - 一旦削除してコピー←この方向で
@@ -132,7 +133,7 @@ jobs:
             # ディレクトリ内のファイルが追加されたときのためのmkdir
             mkdir -p $(dirname "$FILE")
             # cpに失敗したら削除
-            cp -r "tmp/$FILE" "$FILE" #|| rm -f "$FILE"
+            cp -r tmp/$FILE $FILE #|| rm -f "$FILE"
           done
           # cp -r tmp/* .
           tree -a -I .git
