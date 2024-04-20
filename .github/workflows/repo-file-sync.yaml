@@ -134,7 +134,7 @@ jobs:
             cp -r "tmp/$FILE" "$FILE" || rm -f "$FILE"
           done
           # cp -r tmp/* .
-          tree -a
+          tree -a -I .git
           # Clean up the cloned repository directory
           rm -rf tmp
      
