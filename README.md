@@ -1,13 +1,3 @@
-# sync-test-a
+# sync-test-c
 
-追加するよ
-edit eet
-ブランチで編集
-
-あああ
-
-追加編集bbbtest
-
-bで追加したから入れて　共通の編集だよ
 test
-add
