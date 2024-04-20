@@ -77,12 +77,6 @@ jobs:
           MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | tr '\n' ',' | sed 's/,$//' || echo '')
           echo "|$MERGED_PULLS|"
           echo "merged_pulls=$MERGED_PULLS" >> $GITHUB_OUTPUT
-          # TODO: スペース区切りとかにしてもいい？
-          # {
-          #   echo 'merged_pulls<<EOF'
-          #   echo "$MERGED_PULLS"
-          #   echo EOF
-          # } >> "$GITHUB_OUTPUT"
 
       - name: List PRs with changes to specific file
         uses: actions/github-script@v7
@@ -102,12 +96,12 @@ jobs:
               return `${parsedOptions.owner}/${parsedOptions.repo}#${pullNumber}: ${pr.title}`;
             }));
 
-            if (prsWithFileChanges.size > 0) {
+            if (prsWithFileChanges.length > 0) {
               console.log('Changes found');
             } else {
               console.log('No changes');
             }
-            core.setOutput('description', Array.from(prsWithFileChanges).join("\n"));
+            core.setOutput('description', prsWithFileChanges.join("\n"));
 
       - name: Sync Repositories
         id: push
