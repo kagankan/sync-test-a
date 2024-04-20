@@ -55,10 +55,12 @@ jobs:
             repo=$(echo "$setting" | jq -r '.repo')
             paths=$(echo "$setting" | jq -r '.paths[]')
 
+            echo "========================================"
             echo "Processing $owner/$repo with paths:"
             for path in $paths; do
-              echo "- $path"
+            echo "- $path"
             done
+            echo "========================================"
             
             FILE_SYNC_BRANCH_BASE="file-sync/$repo"
             FILE_SYNC_BRANCH_NEW="file-sync/$repo-${{ github.run_id }}"
