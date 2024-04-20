@@ -99,7 +99,7 @@ jobs:
             cd $REPO
             tree -a -I .git
             git config core.sparseCheckout true
-            git sparse-checkout set $(echo "$paths" | sed 's/\n/ /g')
+            git sparse-checkout --no-cone set $(echo "$paths" | sed 's/\n/ /g')
             git checkout
             git fetch
             tree -a -I .git
