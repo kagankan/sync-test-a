@@ -102,6 +102,7 @@ jobs:
             git sparse-checkout set $(echo "$paths" | sed 's/\n/ /g')
             git checkout
             git fetch
+            tree -a -I .git
 
             # どういう原理かわからないけど --sparseをつけないと削除が含まれない？っぽい
             MERGE_COMMITS=$(git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $(echo "$paths" | sed 's/\n/ /g'))
