@@ -43,7 +43,7 @@ jobs:
         with:
           # ここに権限を与えないと、workflowsの書き換えができない
           token: ${{ steps.generate_token.outputs.token }}
-      - name: 前回の同期時刻を取得
+      - name: ファイル反映
         env:
           # ghコマンドを使うために必要
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
@@ -130,13 +130,14 @@ jobs:
             git push origin $FILE_SYNC_BRANCH_NEW
 
             # プルリクエストを作成
+            # TODO: コンフリクト考慮
             echo "Creating pull request"
             gh pr create \
             -B main -H $FILE_SYNC_BRANCH_NEW \
             --reviewer kagankan \
-            --title '$repo 取り込み' \
-            --body '自動生成の取り込みです。マージするかクローズしてください。 # TODO: コンフリクト考慮
+            --title "$repo 取り込み" \
+            --body "自動生成の取り込みです。マージするかクローズしてください。
               ## 関連PR
-              $MERGED_PULLS'
+              $MERGED_PULLS"
 
           done
