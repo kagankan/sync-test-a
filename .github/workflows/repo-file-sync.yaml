@@ -54,7 +54,7 @@ jobs:
           echo $PATHS_MULTILINE
           {
             echo 'paths<<EOF'
-            echo $PATHS_MULTILINE
+            echo "$PATHS" | sed 's/ /\n/g'
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
