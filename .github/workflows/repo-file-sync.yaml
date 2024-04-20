@@ -131,7 +131,7 @@ jobs:
             # ディレクトリ内のファイルが追加されたときのためのmkdir
             mkdir -p $(dirname "$FILE")
             # cpに失敗したら削除
-            cp -r "tmp/$FILE" "$FILE" || rm -f "$FILE"
+            cp -r "tmp/$FILE" "$FILE" #|| rm -f "$FILE"
           done
           # cp -r tmp/* .
           tree -a -I .git
