@@ -126,7 +126,8 @@ jobs:
             COMMIT_HASH=$(git rev-parse HEAD)
             git checkout -b $FILE_SYNC_BRANCH_NEW origin/main
             git cherry-pick $COMMIT_HASH || {
-              git cherry-pick --abort
+              git checkout --theirs .
+              git 
               git commit --allow-empty -m "DONOTMERGE: $repo の変更がコンフリクトしました"
             }
             git push origin $FILE_SYNC_BRANCH_BASE
