@@ -57,9 +57,11 @@ jobs:
           token: ${{ steps.generate_token.outputs.token }}
           repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
           path: tmp
-          sparse-checkout: ${{ steps.format.outputs.targetPaths }}
-          sparse-checkout-cone-mode: false 
-          fetch-depth: 10
+          # sparse-checkout: ${{ steps.format.outputs.targetPaths }}
+          # sparse-checkout-cone-mode: false 
+          # fetch-depth: 10
+          fetch-depth: 0
+          
       - name: マージされたPRをリストアップ
         id: pulls
         working-directory: tmp
