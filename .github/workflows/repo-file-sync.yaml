@@ -94,7 +94,6 @@ jobs:
             const parsedOptions = ${{ matrix.settings }};
 
             const prsWithFileChanges = new Set();
-            const changedFiles = new Set();
             const mergedPRs = `${{ steps.pulls.outputs.merged_pulls }}`.replaceAll("#", "").split("\n").map(str=>Number(str));
             for (const pullNumber of mergedPRs) {
               const { data: pr } = await github.rest.pulls.get({
@@ -111,7 +110,6 @@ jobs:
             } else {
               console.log('No changes');
             }
-            core.setOutput('changedFiles', Array.from(changedFiles).join('\n'));
             core.setOutput('description', Array.from(prsWithFileChanges).join("\n"));
 
       - name: Sync Repositories
