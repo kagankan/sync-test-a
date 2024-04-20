@@ -23,6 +23,14 @@ jobs:
                 "test/*.md"
               ]
             }
+          - |
+            {
+              "owner": "kagankan",
+              "repo": "sync-test-c",
+              "paths": [
+                "README.md"
+              ]
+            }
     env:
       FILE_SYNC_BRANCH_BASE: file-sync/${{ fromJSON(matrix.settings).repo }}
       FILE_SYNC_BRANCH_NEW: file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }}
