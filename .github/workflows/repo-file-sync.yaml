@@ -89,10 +89,9 @@ jobs:
             # クローン
             REPO="$owner/$repo"
             # ~~1回の更新までに10件くらいしかないだろうという仮定。0が確実だが、多くなりすぎるため。~~
-            git clone --filter=blob:none --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
+            git clone --filter=blob:none --no-checkout --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
             cd $REPO
-            ls -a
-            tree -a
+            tree -a -I .git
             git config core.sparseCheckout true
             # git sparse-checkout set $(echo "$paths" | sed 's/\n/ /g')
             git fetch
@@ -104,5 +103,6 @@ jobs:
             echo "|$MERGED_PULLS|"
             echo "merged_pulls=$MERGED_PULLS" >> $GITHUB_OUTPUT
 
+            cd ../../
           done
 
