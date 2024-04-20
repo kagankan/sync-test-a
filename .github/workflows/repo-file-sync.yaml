@@ -64,7 +64,11 @@ jobs:
         id: pulls
         working-directory: tmp
         run: |
-          git log
+          echo "1"
+          git log --since "${{ steps.setup.outputs.last_sync_at }}" --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }}
+          echo "2"
+          git log --first-parent --since "${{ steps.setup.outputs.last_sync_at }}" --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }}
+          echo "3"
           git log --all --full-history --merges --first-parent --since "${{ steps.setup.outputs.last_sync_at }}" --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }}
           MERGED_PULLS=$(git log --all --full-history --merges --first-parent --since "${{ steps.setup.outputs.last_sync_at }}" --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }} | grep -o '#[0-9]\+' || echo '')
           echo "merged_pulls=$MERGED_PULLS" >> $GITHUB_OUTPUT
