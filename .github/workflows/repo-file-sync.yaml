@@ -92,18 +92,15 @@ jobs:
           github-token: ${{ steps.generate_token.outputs.token }}
           script: |
             const parsedOptions = ${{ matrix.settings }};
-
-            const prsWithFileChanges = new Set();
             const mergedPRs = `${{ steps.pulls.outputs.merged_pulls }}`.replaceAll("#", "").split("\n").map(str=>Number(str));
-            for (const pullNumber of mergedPRs) {
+            const prsWithFileChanges = await Promise.all(mergedPRs.map(async pullNumber => {
               const { data: pr } = await github.rest.pulls.get({
                 owner: parsedOptions.owner,
                 repo: parsedOptions.repo,
                 pull_number: pullNumber
               });
-
-              prsWithFileChanges.add(`${parsedOptions.owner}/${parsedOptions.repo}#${pullNumber}: ${pr.title}`);
-            }
+              return `${parsedOptions.owner}/${parsedOptions.repo}#${pullNumber}: ${pr.title}`;
+            }));
 
             if (prsWithFileChanges.size > 0) {
               console.log('Changes found');
