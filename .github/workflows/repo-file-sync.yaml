@@ -69,6 +69,7 @@ jobs:
           echo "1"
           git log --first-parent --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }}
           echo "2"
+          # どういう原理かわからないけど --sparseをつけないと削除が含まれない？っぽい
           git log --sparse --full-history --first-parent --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }}
           echo "3"
           git log --all --full-history --merges --first-parent --since "${{ steps.setup.outputs.last_sync_at }}" --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }}
