@@ -20,7 +20,8 @@ jobs:
               "README.md",
               ".eslintrc",
               "test/*.md",
-              ".github/workflows/test.ya?ml"
+              ".github/workflows/test.yaml",
+              ".github/workflows/test.yml"
             ]
           },
           {
