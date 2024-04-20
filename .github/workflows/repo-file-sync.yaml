@@ -94,7 +94,7 @@ jobs:
             ls -a
             tree -a
             git config core.sparseCheckout true
-            git sparse-checkout set $(echo "$paths" | sed 's/\n/ /g')
+            # git sparse-checkout set $(echo "$paths" | sed 's/\n/ /g')
             git fetch
 
             # どういう原理かわからないけど --sparseをつけないと削除が含まれない？っぽい
