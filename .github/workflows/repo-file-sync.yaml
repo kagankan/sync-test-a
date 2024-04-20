@@ -19,7 +19,8 @@ jobs:
             "paths": [
               "README.md",
               ".eslintrc",
-              "test/*.md"
+              "test/*.md",
+              ".github/workflows/test.ya?ml"
             ]
           },
           {
