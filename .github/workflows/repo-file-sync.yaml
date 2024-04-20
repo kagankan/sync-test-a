@@ -45,8 +45,6 @@ jobs:
           # ここに権限を与えないと、workflowsの書き換えができない
           token: ${{ steps.generate_token.outputs.token }}
       - name: 前回の同期時刻を取得
-        env:
-          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
           git config user.name "GitHub App Bot"
           git config user.email "<email@domain.com>"
