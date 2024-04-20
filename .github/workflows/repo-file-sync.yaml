@@ -60,7 +60,9 @@ jobs:
           sparse-checkout: ${{ steps.format.outputs.targetPaths }}
           sparse-checkout-cone-mode: false 
       - name: tree
-        run: tree
+        run: |
+          git log --merges --first-parent --since $LAST_SYNC_AT -- ${{ join(fromJSON(matrix.settings).paths, ' ') }}
+
       - name: List PRs with changes to specific file
         uses: actions/github-script@v7
         id: list_prs
