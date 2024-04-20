@@ -71,10 +71,9 @@ jobs:
             echo $LAST_SYNC_AT
 
             PATHS_SPACE=$(echo "$paths" | sed 's/\n/ /g')
+
             # 削除ファイルを反映するために一旦削除
-            tree
             rm -rf $PATHS_SPACE
-            tree
 
             # クローン
             REPO="$owner/$repo"
@@ -87,7 +86,7 @@ jobs:
             git config core.sparseCheckout true
             git sparse-checkout set --no-cone $PATHS_SPACE
             git checkout
-            git fetch
+            git fetch origin main
             tree -a -I .git
 
             # コミット履歴からマージされたプルリクエストを取得
