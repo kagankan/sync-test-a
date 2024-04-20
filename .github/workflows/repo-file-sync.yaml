@@ -122,11 +122,14 @@ jobs:
             # コミット作成
             echo "Creating commit"
             git add .
-            git commit -m "Update file from source repository" || echo "No changes to commit"
-            git push origin $FILE_SYNC_BRANCH_BASE
+            git commit -m "$repo の変更を反映" || echo "No changes to commit"
             COMMIT_HASH=$(git rev-parse HEAD)
             git checkout -b $FILE_SYNC_BRANCH_NEW origin/main
-            git cherry-pick $COMMIT_HASH
+            git cherry-pick $COMMIT_HASH || {
+              git cherry-pick --abort
+              git commit --allow-empty -m "DONOTMERGE: $repo の変更がコンフリクトしました"
+            }
+            git push origin $FILE_SYNC_BRANCH_BASE
             git push origin $FILE_SYNC_BRANCH_NEW
 
             # プルリクエストを作成
