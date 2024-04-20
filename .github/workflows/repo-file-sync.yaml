@@ -141,7 +141,7 @@ jobs:
           # Clean up the cloned repository directory
           rm -rf tmp
      
-          git add ${{ join(fromJSON(matrix.settings).paths, ' ') }}
+          git add .
           git commit -m "Update file from source repository" || echo "No changes to commit"
           git push origin $FILE_SYNC_BRANCH_BASE
           COMMIT_HASH=$(git rev-parse HEAD)
