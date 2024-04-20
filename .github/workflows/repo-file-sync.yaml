@@ -125,7 +125,9 @@ jobs:
             git commit -m "$repo の変更を反映" || echo "No changes to commit"
             COMMIT_HASH=$(git rev-parse HEAD)
             git checkout -b $FILE_SYNC_BRANCH_NEW origin/main
+            CONFLICT=0
             git cherry-pick $COMMIT_HASH || {
+              CONFLICT=1
               git checkout --theirs .
               git add .
               git cherry-pick --continue
@@ -139,8 +141,8 @@ jobs:
             gh pr create \
             -B main -H $FILE_SYNC_BRANCH_NEW \
             --reviewer kagankan \
-            --title "$repo 取り込み" \
-            --body "自動生成の取り込みです。マージするかクローズしてください。
+            --title "$repo 取り込み $CONFLICT && '（コンフリクト）' || ''" \
+            --body "$CONFLICT && 'コンフリクト' || '自動生成の取り込みです。マージするかクローズしてください。'
           ## 関連PR
           $MERGED_PULLS"
 
