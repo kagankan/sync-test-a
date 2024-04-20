@@ -82,14 +82,16 @@ jobs:
             echo $LAST_SYNC_AT
 
             # 削除ファイルを反映するために一旦削除
+            tree
             rm -rf $(echo "$paths" | sed 's/\n/ /g')
+            tree
 
             # クローン
             REPO="$owner/$repo"
             # ~~1回の更新までに10件くらいしかないだろうという仮定。0が確実だが、多くなりすぎるため。~~
             git clone --filter=blob:none --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
             cd $REPO
-            git sparse-checkout set $paths
+            git sparse-checkout set $(echo "$paths" | sed 's/\n/ /g')
             git fetch
 
             # どういう原理かわからないけど --sparseをつけないと削除が含まれない？っぽい
