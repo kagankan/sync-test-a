@@ -63,7 +63,7 @@ jobs:
       - name: tree
         run: |
           cd tmp
-          git log --merges --first-parent --since "${{ steps.setup.outputs.last_sync_at }}" --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }} | grep -o '#[0-9]*' || true
+          git log --merges --first-parent --since "${{ steps.setup.outputs.last_sync_at }}" --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }} | grep -o '#[0-9]\+' || true
           cd ../
 
       - name: List PRs with changes to specific file
