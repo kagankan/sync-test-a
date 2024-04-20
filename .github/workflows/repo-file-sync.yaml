@@ -61,7 +61,7 @@ jobs:
           sparse-checkout-cone-mode: false 
       - name: tree
         run: |
-          git log --merges --first-parent --since $LAST_SYNC_AT -- ${{ join(fromJSON(matrix.settings).paths, ' ') }}
+          git log --merges --first-parent --since ${{ steps.setup.outputs.last_sync_at }} -- ${{ join(fromJSON(matrix.settings).paths, ' ') }}
 
       - name: List PRs with changes to specific file
         uses: actions/github-script@v7
