@@ -19,6 +19,7 @@ jobs:
                 "repo": "sync-test-b",
                 "paths": [
                   "README.md",
+                  ".eslintrc",
                   "test/*.md"
                 ]
              }
