@@ -47,6 +47,7 @@ jobs:
           tree
           
           PATHS_MULTILINE=$(echo "$PATHS" | tr ' ' '\n')
+          echo $PATHS_MULTILINE
           {
             echo 'paths<<EOF'
             echo $PATHS_MULTILINE
