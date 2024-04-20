@@ -121,7 +121,8 @@ jobs:
             echo "Copying $FILE from $REPO"
             # ディレクトリ内のファイルが追加されたときのためのmkdir
             mkdir -p $(dirname "$FILE")
-            cp -r "tmp/$FILE" "$FILE"
+            # cpに失敗したら削除
+            cp -r "tmp/$FILE" "$FILE" || rm -f "$FILE"
           done
           tree
           # Clean up the cloned repository directory
