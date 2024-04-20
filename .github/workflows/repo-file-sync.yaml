@@ -140,7 +140,7 @@ jobs:
           git cherry-pick $COMMIT_HASH
           git push origin $FILE_SYNC_BRANCH_NEW
       - name: コンフリクトした場合は、機械的な解消は無理なので、「コンフリクトしました」の旨だけPRで知らせる
-        if: ${{ failure() && steps.push.outputs.conclusion == 'failure' }}
+        if: ${{ failure() && steps.push.conclusion == 'failure' }}
         run: |
           git commit --allow-empty -m "empty"
           git push origin $FILE_SYNC_BRANCH_NEW
@@ -151,7 +151,7 @@ jobs:
           -B main -H $FILE_SYNC_BRANCH_NEW \
           --reviewer kagankan \
           --title '取り込み' \
-          --body '${{ steps.push.outputs.conclusion == 'failure' && '自動生成の取り込みです。マージするかクローズしてください。' }}
+          --body '${{ steps.push.conclusion == 'failure' && '自動生成の取り込みです。マージするかクローズしてください。' }}
             ## 関連PR
             ${{ steps.list_prs.outputs.description }}'
         env:
