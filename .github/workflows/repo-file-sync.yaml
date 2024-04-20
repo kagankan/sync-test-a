@@ -41,9 +41,9 @@ jobs:
           echo $LAST_SYNC_AT
 
           # 一旦削除
-          tree
-          rm -rf ${{ join(fromJSON(matrix.settings).paths, ' ') }}
-          tree
+          # tree
+          # rm -rf ${{ join(fromJSON(matrix.settings).paths, ' ') }}
+          # tree
 
       - name: Generate token
         id: generate_token
@@ -127,15 +127,16 @@ jobs:
             # - 削除ファイルだけ別で検出する
             # - diff のファイル名リストを取得する
           # Copy the specified files
-          FILES="${{ steps.format.outputs.targetPaths }}"
-          for FILE in $FILES; do
-            echo "Copying $FILE from $REPO"
-            # ディレクトリ内のファイルが追加されたときのためのmkdir
-            mkdir -p $(dirname "$FILE")
-            # cpに失敗したら削除
-            cp -r tmp/$FILE $FILE #|| rm -f "$FILE"
-          done
+          # FILES="${{ steps.format.outputs.targetPaths }}"
+          # for FILE in $FILES; do
+          #   echo "Copying $FILE from $REPO"
+          #   # ディレクトリ内のファイルが追加されたときのためのmkdir
+          #   mkdir -p $(dirname "$FILE")
+          #   # cpに失敗したら削除
+          #   cp -r tmp/$FILE $FILE #|| rm -f "$FILE"
+          # done
           # cp -r tmp/* .
+          rsync tmp/ . --delete  --exclude '.git/'
           tree -a -I .git
           # Clean up the cloned repository directory
           rm -rf tmp
