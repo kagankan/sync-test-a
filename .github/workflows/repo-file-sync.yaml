@@ -76,6 +76,7 @@ jobs:
           echo $MERGE_COMMITS
           MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' || echo '')
           # echo "merged_pulls=$MERGED_PULLS" >> $GITHUB_OUTPUT
+          # TODO: スペース区切りとかにしてもいい？
           {
             echo 'merged_pulls<<EOF'
             echo "$MERGED_PULLS"
