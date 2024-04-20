@@ -42,7 +42,7 @@ jobs:
 
           # 一旦削除
           tree
-          rm -rf *
+          rm -rf ${{ join(fromJSON(matrix.settings).paths, ' ') }}
           tree
 
       - name: Generate token
