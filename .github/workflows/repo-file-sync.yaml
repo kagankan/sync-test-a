@@ -57,12 +57,16 @@ jobs:
           private_key: ${{ secrets.REPO_FILE_SYNC_PRIVATE_KEY }}
       - name: 前回の同期時刻を取得
         id: setup
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
           git config user.name "GitHub App Bot"
           git config user.email "<email@domain.com>"
           git fetch
 
           settings=$(echo "$SETTINGS" | jq -c '.[]')
+
+          # 変更をもってくる
           echo "$settings" | while IFS= read -r setting; do
 
             owner=$(echo "$setting" | jq -r '.owner')
@@ -104,5 +108,33 @@ jobs:
             echo "merged_pulls=$MERGED_PULLS" >> $GITHUB_OUTPUT
 
             cd ../../
-          done
 
+            # owner=$(echo "$setting" | jq -r '.owner')
+            # repo=$(echo "$setting" | jq -r '.repo')
+            # paths=$(echo "$setting" | jq -r '.paths[]')
+            # REPO="$owner/$repo"
+            FILE_SYNC_BRANCH_BASE="file-sync/$repo"
+            FILE_SYNC_BRANCH_NEW="file-sync/$repo-${{ github.run_id }}"
+            tree -a -I .git
+            rsync $REPO/ . -r --exclude '.git/'
+            tree -a -I .git
+            # Clean up the cloned repository directory
+            rm -rf $REPO
+  
+            git add .
+            git commit -m "Update file from source repository" || echo "No changes to commit"
+            git push origin $FILE_SYNC_BRANCH_BASE
+            COMMIT_HASH=$(git rev-parse HEAD)
+            git checkout -b $FILE_SYNC_BRANCH_NEW origin/main
+            git cherry-pick $COMMIT_HASH
+            git push origin $FILE_SYNC_BRANCH_NEW
+
+            gh pr create \
+            -B main -H $FILE_SYNC_BRANCH_NEW \
+            --reviewer kagankan \
+            --title '取り込み' \
+            --body '自動生成の取り込みです。マージするかクローズしてください。 # TODO: コンフリクト考慮
+              ## 関連PR
+              $merged_pulls'
+
+          done
