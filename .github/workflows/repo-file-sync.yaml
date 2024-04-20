@@ -40,7 +40,9 @@ jobs:
           echo $LAST_SYNC_AT
 
           # 一旦削除
+          tree
           rm -rf *
+          tree
 
       - name: Generate token
         id: generate_token
