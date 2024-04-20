@@ -82,10 +82,10 @@ jobs:
             rm -rf $PATHS_SPACE
 
             # クローン
-            REPO="$owner/$repo"
+            REPO_FULL="$owner/$repo"
             TMP_DIR="tmp"
-            echo "Cloning $REPO"
-            git clone --filter=blob:none --no-checkout --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $TMP_DIR
+            echo "Cloning $REPO_FULL"
+            git clone --filter=blob:none --no-checkout --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR
 
             pushd $TMP_DIR
 
