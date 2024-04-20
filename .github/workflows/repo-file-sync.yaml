@@ -60,10 +60,12 @@ jobs:
           sparse-checkout: ${{ steps.format.outputs.targetPaths }}
           sparse-checkout-cone-mode: false 
           fetch-depth: 10
-      - name: tree
+      - name: マージされたPRをリストアップ
+        id: pulls
         working-directory: tmp
         run: |
-          git log --merges --first-parent --since "${{ steps.setup.outputs.last_sync_at }}" --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }} | grep -o '#[0-9]\+' || true
+          MERGED_PULLS=$(git log --merges --first-parent --since "${{ steps.setup.outputs.last_sync_at }}" --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }} | grep -o '#[0-9]\+' || '')
+          echo "merged_pulls=$MERGED_PULLS" >> $GITHUB_OUTPUT
 
       - name: List PRs with changes to specific file
         uses: actions/github-script@v7
@@ -72,41 +74,18 @@ jobs:
           github-token: ${{ steps.generate_token.outputs.token }}
           script: |
             const parsedOptions = ${{ matrix.settings }};
-            
-            const { data: pullRequests } = await github.rest.pulls.list({
-              owner: parsedOptions.owner,
-              repo: parsedOptions.repo,
-              state: 'closed'
-            });
-
-            const sinceDate = new Date("${{ steps.setup.outputs.last_sync_at }}");
-
-            // 前回の反映以降にマージされたPR
-            const mergedPRs = pullRequests.filter(pr => pr.merged_at && new Date(pr.merged_at) > sinceDate);
-
-            // 対象ファイルをリスト化
-            const globber = await glob.create("**/*", {followSymbolicLinks: false});
-            const targetFiles = (await globber.glob()).map((file) => file.replace(`${process.env.GITHUB_WORKSPACE}/`, ''));
-            console.log(targetFiles);
-
-            // TODO: 新規追加ファイルの対応
 
             const prsWithFileChanges = new Set();
             const changedFiles = new Set();
-            for (const pr of mergedPRs) {
-              const { data: files } = await github.rest.pulls.listFiles({
+            const mergedPRs = "${{ steps.pulls.outputs.merged_pulls }}".replaceAll("#").split("\n").map(str=>Number(str));
+            for (const pullNumber of mergedPRs) {
+              const { data: pr } = await github.rest.pulls.get({
                 owner: parsedOptions.owner,
                 repo: parsedOptions.repo,
-                pull_number: pr.number
+                pull_number: pullNumber
               });
 
-              for (const targetPath of targetFiles) {
-                const fileChanged = files.some(file => file.filename === targetPath);
-                if (fileChanged) {
-                  changedFiles.add(targetPath);
-                  prsWithFileChanges.add(`${parsedOptions.owner}/${parsedOptions.repo}#${pr.number}: ${pr.title}`);
-                }
-              }
+              prsWithFileChanges.add(`${parsedOptions.owner}/${parsedOptions.repo}#${pullNumber}: ${pr.title}`);
             }
 
             if (prsWithFileChanges.size > 0) {
@@ -119,17 +98,20 @@ jobs:
 
       - name: Sync Repositories
         id: push
-        if: ${{ steps.list_prs.outputs.changedFiles != '' }}
+        if: ${{ steps.pulls.outputs.merged_pulls != '' }}
         run: |
+          # // TODO: 新規追加ファイルの対応
+          # // TODO: 削除ファイルの対応
           # Copy the specified files
-          FILES="${{ steps.list_prs.outputs.changedFiles }}"
-          for FILE in $FILES; do
-            echo "Copying $FILE from $REPO"
-            # ディレクトリ内のファイルが追加されたときのためのmkdir
-            mkdir -p $(dirname "$FILE")
-            # cpに失敗したら削除
-            cp -r "tmp/$FILE" "$FILE" || rm -f "$FILE"
-          done
+          # FILES="${{ steps.list_prs.outputs.changedFiles }}"
+          # for FILE in $FILES; do
+          #   echo "Copying $FILE from $REPO"
+          #   # ディレクトリ内のファイルが追加されたときのためのmkdir
+          #   mkdir -p $(dirname "$FILE")
+          #   # cpに失敗したら削除
+          #   cp -r "tmp/$FILE" "$FILE" || rm -f "$FILE"
+          # done
+          cp -r tmp/* .
           tree
           # Clean up the cloned repository directory
           rm -rf tmp
@@ -148,13 +130,13 @@ jobs:
           git commit --allow-empty -m "empty"
           git push origin $FILE_SYNC_BRANCH_NEW
       - name: Create Pull Request
-        if: ${{ always() && steps.list_prs.outputs.changedFiles != '' }}
+        if: ${{ always() && steps.pulls.outputs.merged_pulls != '' }}
         run: |
           gh pr create \
           -B main -H $FILE_SYNC_BRANCH_NEW \
           --reviewer kagankan \
           --title '取り込み' \
-          --body '${{ steps.push.conclusion == 'failure' && '自動生成の取り込みです。マージするかクローズしてください。' }}
+          --body '${{ steps.push.conclusion == 'failure' && 'コンフリクトしました。' || '自動生成の取り込みです。マージするかクローズしてください。' }}
             ## 関連PR
             ${{ steps.list_prs.outputs.description }}'
         env:
