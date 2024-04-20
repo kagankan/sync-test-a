@@ -68,6 +68,8 @@ jobs:
         run: |
           echo "1"
           git log --first-parent --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }}
+          echo "1-"
+          git log --full-history --first-parent --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }}
           echo "2"
           git log --all --full-history --first-parent --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }}
           echo "3"
