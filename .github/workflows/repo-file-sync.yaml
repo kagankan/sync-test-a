@@ -10,135 +10,42 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        settings:
-          - |
-            {
-              "owner": "kagankan",
-              "repo": "sync-test-b",
-              "paths": [
-                "README.md",
-                ".eslintrc",
-                "test/*.md"
-              ]
-            }
-          - |
-            {
-              "owner": "kagankan",
-              "repo": "sync-test-c",
-              "paths": [
-                "README.md"
-              ]
-            }
     env:
-      FILE_SYNC_BRANCH_BASE: file-sync/${{ fromJSON(matrix.settings).repo }}
-      FILE_SYNC_BRANCH_NEW: file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }}
+      SETTINGS: |
+        [
+          {
+            "owner": "kagankan",
+            "repo": "sync-test-b",
+            "paths": [
+              "README.md",
+              ".eslintrc",
+              "test/*.md"
+            ]
+          },
+          {
+            "owner": "kagankan",
+            "repo": "sync-test-c",
+            "paths": [
+              "README.md"
+            ]
+          }
+        ]
     steps:
       - uses: actions/checkout@v4
 
-      - name: 前回の同期時刻を取得
-        id: setup
+      - name: Loop through SETTINGS
         run: |
-          git config user.name "GitHub App Bot"
-          git config user.email "<email@domain.com>"
-          git fetch
-          git checkout -B $FILE_SYNC_BRANCH_BASE origin/$FILE_SYNC_BRANCH_BASE || git checkout -b $FILE_SYNC_BRANCH_BASE
-          LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
-          echo "last_sync_at=$LAST_SYNC_AT" >> $GITHUB_OUTPUT
-          echo $LAST_SYNC_AT
-
-          PATHS=$(echo "${{ join(fromJSON(matrix.settings).paths, ' ') }}")
-
-          # 削除ファイルを反映するために一旦削除
-          rm -rf $PATHS
+          # SETTINGS を JSON としてパース
+          settings=$(echo "${{ env.SETTINGS }}" | jq -c '.[]')
           
-          {
-            echo 'paths<<EOF'
-            echo "$PATHS" | sed 's/ /\n/g'
-            echo EOF
-          } >> "$GITHUB_OUTPUT"
+          # ループ処理
+          echo "$settings" | while IFS= read -r setting; do
+            owner=$(echo "$setting" | jq -r '.owner')
+            repo=$(echo "$setting" | jq -r '.repo')
+            paths=$(echo "$setting" | jq -r '.paths[]')
 
-      - name: Generate token
-        id: generate_token
-        uses: tibdex/github-app-token@v1
-        with:
-          app_id: ${{ secrets.REPO_FILE_SYNC_APP_ID }}
-          private_key: ${{ secrets.REPO_FILE_SYNC_PRIVATE_KEY }}
-      - name: 対象ファイルをチェックアウト
-        uses: actions/checkout@v4
-        with:
-          token: ${{ steps.generate_token.outputs.token }}
-          repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
-          path: tmp
-          sparse-checkout: ${{ steps.setup.outputs.paths }}
-          sparse-checkout-cone-mode: false
-          fetch-depth: 10 # 1回の更新までに10件くらいしかないだろうという仮定。0が確実だが、多くなりすぎるため。
-
-      - name: マージされたPRをリストアップ
-        id: pulls
-        working-directory: tmp
-        run: |
-          # どういう原理かわからないけど --sparseをつけないと削除が含まれない？っぽい
-          MERGE_COMMITS=$(git log --sparse --first-parent --since "${{ steps.setup.outputs.last_sync_at }}" --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }})
-          echo $MERGE_COMMITS
-          MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | tr '\n' ',' | sed 's/,$//' || echo '')
-          echo "|$MERGED_PULLS|"
-          echo "merged_pulls=$MERGED_PULLS" >> $GITHUB_OUTPUT
-
-      - name: タイトルを取得
-        uses: actions/github-script@v7
-        id: list_prs
-        if: ${{ steps.pulls.outputs.merged_pulls != '' }}
-        with:
-          github-token: ${{ steps.generate_token.outputs.token }}
-          script: |
-            const parsedOptions = ${{ matrix.settings }};
-            const mergedPRs = "${{ steps.pulls.outputs.merged_pulls }}".replaceAll("#", "").split(",").map(str=>Number(str));
-            const prsWithFileChanges = await Promise.all(mergedPRs.map(async pullNumber => {
-              const { data: pr } = await github.rest.pulls.get({
-                owner: parsedOptions.owner,
-                repo: parsedOptions.repo,
-                pull_number: pullNumber
-              });
-              return `${parsedOptions.owner}/${parsedOptions.repo}#${pullNumber}: ${pr.title}`;
-            }));
-
-            core.setOutput('description', prsWithFileChanges.join("\n"));
-
-      - name: Sync Repositories
-        id: push
-        continue-on-error: true
-        if: ${{ steps.pulls.outputs.merged_pulls != '' }}
-        run: |
-          tree -a -I .git
-          rsync tmp/ . -r --exclude '.git/'
-          tree -a -I .git
-          # Clean up the cloned repository directory
-          rm -rf tmp
-
-          git add .
-          git commit -m "Update file from source repository" || echo "No changes to commit"
-          git push origin $FILE_SYNC_BRANCH_BASE
-          COMMIT_HASH=$(git rev-parse HEAD)
-          git checkout -b $FILE_SYNC_BRANCH_NEW origin/main
-          git cherry-pick $COMMIT_HASH
-          git push origin $FILE_SYNC_BRANCH_NEW
-      - name: コンフリクトした場合は、機械的な解消は無理なので、「コンフリクトしました」の旨だけPRで知らせる
-        if: ${{ steps.push.outcome == 'failure' }}
-        run: |
-          git cherry-pick --abort
-          git commit --allow-empty -m "empty"
-          git push origin $FILE_SYNC_BRANCH_NEW
-      - name: Create Pull Request
-        if: ${{ steps.pulls.outputs.merged_pulls != '' }}
-        run: |
-          gh pr create \
-          -B main -H $FILE_SYNC_BRANCH_NEW \
-          --reviewer kagankan \
-          --title '取り込み' \
-          --body '${{ steps.push.outcome == 'failure' && 'コンフリクトしました。' || '自動生成の取り込みです。マージするかクローズしてください。' }}
-            ## 関連PR
-            ${{ steps.list_prs.outputs.description }}'
-        env:
-          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+            echo "Processing $owner/$repo with paths:"
+            for path in $paths; do
+              echo "- $path"
+            done
+          done
