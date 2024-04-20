@@ -127,8 +127,8 @@ jobs:
             git checkout -b $FILE_SYNC_BRANCH_NEW origin/main
             git cherry-pick $COMMIT_HASH || {
               git checkout --theirs .
-              git 
-              git commit --allow-empty -m "DONOTMERGE: $repo の変更がコンフリクトしました"
+              git add .
+              git cherry-pick --continue
             }
             git push origin $FILE_SYNC_BRANCH_BASE
             git push origin $FILE_SYNC_BRANCH_NEW
