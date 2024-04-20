@@ -112,6 +112,7 @@ jobs:
             core.setOutput('description', Array.from(prsWithFileChanges).join("\n"));
 
       - name: Sync Repositories
+        id: push
         if: ${{ steps.list_prs.outputs.changedFiles != '' }}
         run: |
           # Copy the specified files
@@ -133,16 +134,19 @@ jobs:
           git checkout -b $FILE_SYNC_BRANCH_NEW origin/main
           git cherry-pick $COMMIT_HASH
           git push origin $FILE_SYNC_BRANCH_NEW
-
-      # TODO: コンフリクトした場合は、機械的な解消は無理なので、「コンフリクトしました」の旨だけPRで知らせる
+      - name: コンフリクトした場合は、機械的な解消は無理なので、「コンフリクトしました」の旨だけPRで知らせる
+        if: ${{ failure() && steps.push.outputs.conclusion == 'failure' }}
+        run: |
+          git commit --allow-empty -m "empty"
+          git push origin $FILE_SYNC_BRANCH_NEW
       - name: Create Pull Request
-        if: ${{ steps.list_prs.outputs.changedFiles != '' }}
+        if: ${{ always() && steps.list_prs.outputs.changedFiles != '' }}
         run: |
           gh pr create \
           -B main -H $FILE_SYNC_BRANCH_NEW \
           --reviewer kagankan \
           --title '取り込み' \
-          --body '自動生成の取り込みです。マージするかクローズしてください。
+          --body '${{ steps.push.outputs.conclusion == 'failure' && '自動生成の取り込みです。マージするかクローズしてください。' }}
             ## 関連PR
             ${{ steps.list_prs.outputs.description }}'
         env:
