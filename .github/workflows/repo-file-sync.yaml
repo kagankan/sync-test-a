@@ -48,8 +48,8 @@ jobs:
           # ghコマンドを使うために必要
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
-          git config user.name "GitHub App Bot"
-          git config user.email "<email@domain.com>"
+          git config user.name "file-sync [bot]"
+          git config user.email "<email@example.com>"
 
           settings=$(echo "$SETTINGS" | jq -c '.[]')
 
