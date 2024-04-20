@@ -137,7 +137,7 @@ jobs:
             --reviewer kagankan \
             --title "$repo 取り込み" \
             --body "自動生成の取り込みです。マージするかクローズしてください。
-              ## 関連PR
-              $MERGED_PULLS"
+          ## 関連PR
+          $MERGED_PULLS"
 
           done
