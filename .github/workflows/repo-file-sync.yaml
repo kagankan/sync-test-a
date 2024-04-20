@@ -141,8 +141,8 @@ jobs:
             gh pr create \
             -B main -H $FILE_SYNC_BRANCH_NEW \
             --reviewer kagankan \
-            --title "$repo 取り込み $($CONFLICT && '（コンフリクト）' || '')" \
-            --body "$($CONFLICT && 'コンフリクト' || '自動生成の取り込みです。マージするかクローズしてください。')
+            --title "$repo 取り込み $($CONFLICT && echo '（コンフリクト）' || echo '')" \
+            --body "$($CONFLICT && echo 'コンフリクト' || echo '自動生成の取り込みです。マージするかクローズしてください。')
           ## 関連PR
           $MERGED_PULLS"
 
