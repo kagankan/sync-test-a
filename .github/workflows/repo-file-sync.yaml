@@ -36,8 +36,8 @@ jobs:
       - name: Loop through SETTINGS
         run: |
           # SETTINGS を JSON としてパース
-          settings=$(echo "${{ env.SETTINGS }}" | jq -c '.[]')
-          
+          settings=$(echo "$SETTINGS" | jq -c '.[]')
+          echo $settings
           # ループ処理
           echo "$settings" | while IFS= read -r setting; do
             owner=$(echo "$setting" | jq -r '.owner')
