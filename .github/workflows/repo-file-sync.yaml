@@ -40,14 +40,17 @@ jobs:
           echo "last_sync_at=$LAST_SYNC_AT" >> $GITHUB_OUTPUT
           echo $LAST_SYNC_AT
 
+          PATHS=$(echo "${{ join(fromJSON(matrix.settings).paths, ' ') }}")
           # 一旦削除
           tree
-          rm -rf ${{ join(fromJSON(matrix.settings).paths, ' ') }}
+          rm -rf $PATHS
           tree
           
-          PATHS=$(echo "${{ join(fromJSON(matrix.settings).paths, ' ') }}" | tr ' ' '\n')
-          echo "$PATHS"
-          echo "paths=$PATHS" >> $GITHUB_OUTPUT
+          {
+            echo 'paths<<EOF'
+            echo $(echo "$PATHS" | tr ' ' '\n')
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
 
       - name: Generate token
         id: generate_token
