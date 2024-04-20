@@ -77,7 +77,7 @@ jobs:
 
             const prsWithFileChanges = new Set();
             const changedFiles = new Set();
-            const mergedPRs = "${{ steps.pulls.outputs.merged_pulls }}".replaceAll("#").split("\n").map(str=>Number(str));
+            const mergedPRs = "${{ steps.pulls.outputs.merged_pulls }}".replaceAll("#", "").split("\n").map(str=>Number(str));
             for (const pullNumber of mergedPRs) {
               const { data: pr } = await github.rest.pulls.get({
                 owner: parsedOptions.owner,
