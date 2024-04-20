@@ -59,6 +59,7 @@ jobs:
           path: tmp
           sparse-checkout: ${{ steps.format.outputs.targetPaths }}
           sparse-checkout-cone-mode: false 
+          fetch-depth: 10
       - name: tree
         run: |
           cd tmp
