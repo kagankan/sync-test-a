@@ -132,11 +132,11 @@ jobs:
               git add .
               git cherry-pick --continue
             }
+            echo "CONFLICT: $CONFLICT"
             git push origin $FILE_SYNC_BRANCH_BASE
             git push origin $FILE_SYNC_BRANCH_NEW
 
             # プルリクエストを作成
-            # TODO: コンフリクト考慮
             echo "Creating pull request"
             gh pr create \
             -B main -H $FILE_SYNC_BRANCH_NEW \
