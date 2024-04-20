@@ -47,7 +47,7 @@ jobs:
           tree
           
           echo $PATHS
-          PATHS_MULTILINE=$(echo -e "$PATHS" | sed 's/ /\\n/g')
+          PATHS_MULTILINE=$(echo -e "$PATHS" | sed 's/ /\n/g')
           echo $PATHS_MULTILINE
           {
             echo 'paths<<EOF'
