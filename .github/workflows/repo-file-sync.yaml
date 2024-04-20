@@ -33,14 +33,16 @@ jobs:
           }
         ]
     steps:
-      - uses: actions/checkout@v4
-
       - name: Generate token
         id: generate_token
         uses: tibdex/github-app-token@v1
         with:
           app_id: ${{ secrets.REPO_FILE_SYNC_APP_ID }}
           private_key: ${{ secrets.REPO_FILE_SYNC_PRIVATE_KEY }}
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ steps.generate_token.outputs.token }}
       - name: 前回の同期時刻を取得
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
