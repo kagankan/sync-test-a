@@ -59,6 +59,8 @@ jobs:
           path: tmp
           sparse-checkout: ${{ steps.format.outputs.targetPaths }}
           sparse-checkout-cone-mode: false 
+      - name: tree
+        run: tree
       - name: List PRs with changes to specific file
         uses: actions/github-script@v7
         id: list_prs
@@ -83,7 +85,7 @@ jobs:
             const targetFiles = (await globber.glob()).map((file) => file.replace(`${process.env.GITHUB_WORKSPACE}/`, ''));
             console.log(targetFiles);
 
-            // TODO: 削除ファイルの対応
+            // TODO: 新規追加ファイルの対応
 
             const prsWithFileChanges = new Set();
             const changedFiles = new Set();
