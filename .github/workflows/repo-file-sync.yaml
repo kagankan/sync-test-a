@@ -46,9 +46,10 @@ jobs:
           rm -rf $PATHS
           tree
           
+          PATHS_MULTILINE=$(echo "$PATHS" | tr ' ' '\n')
           {
             echo 'paths<<EOF'
-            echo $(echo "$PATHS" | tr ' ' '\n')
+            echo $PATHS_MULTILINE
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
