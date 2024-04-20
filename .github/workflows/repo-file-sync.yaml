@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Loop through SETTINGS
+      - name: デバッグプリント
         run: |
           # SETTINGS を JSON としてパース
           settings=$(echo "$SETTINGS" | jq -c '.[]')
@@ -49,3 +49,55 @@ jobs:
               echo "- $path"
             done
           done
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.REPO_FILE_SYNC_APP_ID }}
+          private_key: ${{ secrets.REPO_FILE_SYNC_PRIVATE_KEY }}
+      - name: 前回の同期時刻を取得
+        id: setup
+        run: |
+          git config user.name "GitHub App Bot"
+          git config user.email "<email@domain.com>"
+          git fetch
+
+          settings=$(echo "$SETTINGS" | jq -c '.[]')
+          echo "$settings" | while IFS= read -r setting; do
+
+            owner=$(echo "$setting" | jq -r '.owner')
+            repo=$(echo "$setting" | jq -r '.repo')
+            paths=$(echo "$setting" | jq -r '.paths[]')
+
+            echo "Processing $owner/$repo with paths:"
+            for path in $paths; do
+              echo "- $path"
+            done
+            
+            #  前回の同期時刻を取得
+            FILE_SYNC_BRANCH_BASE="file-sync/$repo"
+            git checkout -B $FILE_SYNC_BRANCH_BASE origin/$FILE_SYNC_BRANCH_BASE || git checkout -b $FILE_SYNC_BRANCH_BASE
+            LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
+            echo "last_sync_at=$LAST_SYNC_AT" >> $GITHUB_OUTPUT
+            echo $LAST_SYNC_AT
+
+            # 削除ファイルを反映するために一旦削除
+            rm -rf $(echo "$paths" | sed 's/\n/ /g')
+
+            # クローン
+            REPO="$owner/$repo"
+            # ~~1回の更新までに10件くらいしかないだろうという仮定。0が確実だが、多くなりすぎるため。~~
+            git clone --filter=blob:none --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
+            cd $REPO
+            git sparse-checkout set $paths
+            git fetch
+
+            # どういう原理かわからないけど --sparseをつけないと削除が含まれない？っぽい
+            MERGE_COMMITS=$(git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $(echo "$paths" | sed 's/\n/ /g'))
+            echo $MERGE_COMMITS
+            MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | tr '\n' ',' | sed 's/,$//' || echo '')
+            echo "|$MERGED_PULLS|"
+            echo "merged_pulls=$MERGED_PULLS" >> $GITHUB_OUTPUT
+
+          done
+
