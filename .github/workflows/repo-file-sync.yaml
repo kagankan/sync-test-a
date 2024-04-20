@@ -70,7 +70,7 @@ jobs:
           token: ${{ steps.generate_token.outputs.token }}
           repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
           path: tmp
-          sparse-checkout: ${{ steps.format.outputs.targetPaths }}
+          sparse-checkout: ${{ steps.setup.outputs.paths }}
           sparse-checkout-cone-mode: false
           fetch-depth: 10 # 1回の更新までに10件くらいしかないだろうという仮定。0が確実だが、多くなりすぎるため。
 
