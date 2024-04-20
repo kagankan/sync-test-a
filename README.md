@@ -1,7 +1,7 @@
 # sync-test-a
 
 追加するよ
-edit
+edit eet
 ブランチで編集
 
 あああ
