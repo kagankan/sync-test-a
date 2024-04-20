@@ -74,15 +74,15 @@ jobs:
           # どういう原理かわからないけど --sparseをつけないと削除が含まれない？っぽい
           MERGE_COMMITS=$(git log --sparse --first-parent --since "${{ steps.setup.outputs.last_sync_at }}" --oneline --pretty=format:'%s' -- ${{ join(fromJSON(matrix.settings).paths, ' ') }})
           echo $MERGE_COMMITS
-          MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' || echo '')
-          # echo "merged_pulls=$MERGED_PULLS" >> $GITHUB_OUTPUT
-          # TODO: スペース区切りとかにしてもいい？
-          {
-            echo 'merged_pulls<<EOF'
-            echo "$MERGED_PULLS"
-            echo EOF
-          } >> "$GITHUB_OUTPUT"
+          MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | sed 's/\n/,/' || echo '')
           echo "|$MERGED_PULLS|"
+          echo "merged_pulls=$MERGED_PULLS" >> $GITHUB_OUTPUT
+          # TODO: スペース区切りとかにしてもいい？
+          # {
+          #   echo 'merged_pulls<<EOF'
+          #   echo "$MERGED_PULLS"
+          #   echo EOF
+          # } >> "$GITHUB_OUTPUT"
 
       - name: List PRs with changes to specific file
         uses: actions/github-script@v7
@@ -92,7 +92,7 @@ jobs:
           github-token: ${{ steps.generate_token.outputs.token }}
           script: |
             const parsedOptions = ${{ matrix.settings }};
-            const mergedPRs = `${{ steps.pulls.outputs.merged_pulls }}`.replaceAll("#", "").split("\n").map(str=>Number(str));
+            const mergedPRs = `${{ steps.pulls.outputs.merged_pulls }}`.replaceAll("#", "").split(",").map(str=>Number(str));
             const prsWithFileChanges = await Promise.all(mergedPRs.map(async pullNumber => {
               const { data: pr } = await github.rest.pulls.get({
                 owner: parsedOptions.owner,
