@@ -4,7 +4,7 @@ name: Repo File Sync
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '0 3 * * MON-FRI' # Run workflow at 12:00 JST every MON-FRI
+    - cron: "0 3 * * MON-FRI" # Run workflow at 12:00 JST every MON-FRI
 permissions:
   contents: write
 jobs:
@@ -12,17 +12,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        settings:           
-          -  |
-             {
-                "owner": "kagankan",
-                "repo": "sync-test-b",
-                "paths": [
-                  "README.md",
-                  ".eslintrc",
-                  "test/*.md"
-                ]
-             }
+        settings:
+          - |
+            {
+              "owner": "kagankan",
+              "repo": "sync-test-b",
+              "paths": [
+                "README.md",
+                ".eslintrc",
+                "test/*.md"
+              ]
+            }
     env:
       FILE_SYNC_BRANCH_BASE: file-sync/${{ fromJSON(matrix.settings).repo }}
       FILE_SYNC_BRANCH_NEW: file-sync/${{ fromJSON(matrix.settings).repo }}-${{ github.run_id }}
@@ -64,9 +64,9 @@ jobs:
           repository: ${{ fromJSON(matrix.settings).owner }}/${{ fromJSON(matrix.settings).repo }}
           path: tmp
           sparse-checkout: ${{ steps.format.outputs.targetPaths }}
-          sparse-checkout-cone-mode: false 
+          sparse-checkout-cone-mode: false
           fetch-depth: 10 # 1回の更新までに10件くらいしかないだろうという仮定。0が確実だが、多くなりすぎるため。
-          
+
       - name: マージされたPRをリストアップ
         id: pulls
         working-directory: tmp
@@ -119,7 +119,7 @@ jobs:
           tree -a -I .git
           # Clean up the cloned repository directory
           rm -rf tmp
-     
+
           git add .
           git commit -m "Update file from source repository" || echo "No changes to commit"
           git push origin $FILE_SYNC_BRANCH_BASE
@@ -145,4 +145,3 @@ jobs:
             ${{ steps.list_prs.outputs.description }}'
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-        
