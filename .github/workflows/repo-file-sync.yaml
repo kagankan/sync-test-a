@@ -119,22 +119,22 @@ jobs:
         run: |
           # // TODO: 新規追加ファイルの対応
           # // TODO: 削除ファイルの対応
-            # - 一旦削除してコピー
+            # - 一旦削除してコピー←この方向で
               # addのときに対象ファイルだけ
               # rmのときに対象ファイルだけ
             # - 削除ファイルだけ別で検出する
             # - diff のファイル名リストを取得する
           # Copy the specified files
-          # FILES="${{ steps.list_prs.outputs.changedFiles }}"
-          # for FILE in $FILES; do
-          #   echo "Copying $FILE from $REPO"
-          #   # ディレクトリ内のファイルが追加されたときのためのmkdir
-          #   mkdir -p $(dirname "$FILE")
-          #   # cpに失敗したら削除
-          #   cp -r "tmp/$FILE" "$FILE" || rm -f "$FILE"
-          # done
-          cp -r tmp/* .
-          tree
+          FILES="${{ steps.format.outputs.targetPaths }}"
+          for FILE in $FILES; do
+            echo "Copying $FILE from $REPO"
+            # ディレクトリ内のファイルが追加されたときのためのmkdir
+            mkdir -p $(dirname "$FILE")
+            # cpに失敗したら削除
+            cp -r "tmp/$FILE" "$FILE" || rm -f "$FILE"
+          done
+          # cp -r tmp/* .
+          tree -a
           # Clean up the cloned repository directory
           rm -rf tmp
      
