@@ -39,6 +39,9 @@ jobs:
           echo "last_sync_at=$LAST_SYNC_AT" >> $GITHUB_OUTPUT
           echo $LAST_SYNC_AT
 
+          # 一旦削除
+          rm -rf *
+
       - name: Generate token
         id: generate_token
         uses: tibdex/github-app-token@v1
@@ -107,6 +110,11 @@ jobs:
         run: |
           # // TODO: 新規追加ファイルの対応
           # // TODO: 削除ファイルの対応
+            # - 一旦削除してコピー
+              # addのときに対象ファイルだけ
+              # rmのときに対象ファイルだけ
+            # - 削除ファイルだけ別で検出する
+            # - diff のファイル名リストを取得する
           # Copy the specified files
           # FILES="${{ steps.list_prs.outputs.changedFiles }}"
           # for FILE in $FILES; do
@@ -121,7 +129,7 @@ jobs:
           # Clean up the cloned repository directory
           rm -rf tmp
      
-          git add .
+          git add ${{ join(fromJSON(matrix.settings).paths, ' ') }}
           git commit -m "Update file from source repository" || echo "No changes to commit"
           git push origin $FILE_SYNC_BRANCH_BASE
           COMMIT_HASH=$(git rev-parse HEAD)
