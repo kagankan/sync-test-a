@@ -127,7 +127,7 @@ jobs:
             # - 削除ファイルだけ別で検出する
             # - diff のファイル名リストを取得する
           # Copy the specified files
-          # FILES="${{ steps.format.outputs.targetPaths }}"
+          FILES="${{ steps.format.outputs.targetPaths }}"
           # for FILE in $FILES; do
           #   echo "Copying $FILE from $REPO"
           #   # ディレクトリ内のファイルが追加されたときのためのmkdir
