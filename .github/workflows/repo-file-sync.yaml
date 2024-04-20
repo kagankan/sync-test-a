@@ -66,8 +66,10 @@ jobs:
             FILE_SYNC_BRANCH_NEW="file-sync/$repo-${{ github.run_id }}"
 
             #  前回の同期時刻を取得
+            echo "Checking out $FILE_SYNC_BRANCH_BASE"
             git checkout -B $FILE_SYNC_BRANCH_BASE origin/$FILE_SYNC_BRANCH_BASE || git checkout -b $FILE_SYNC_BRANCH_BASE origin/main
             LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
+            echo "Last sync at: $LAST_SYNC_AT"
 
             PATHS_SPACE=$(echo "$paths" | sed 's/\n/ /g')
 
@@ -77,6 +79,7 @@ jobs:
             # クローン
             REPO="$owner/$repo"
             TMP_DIR="$owner/$repo"
+            echo "Cloning $REPO"
             # ~~1回の更新までに10件くらいしかないだろうという仮定。0が確実だが、多くなりすぎるため。~~
             git clone --filter=blob:none --no-checkout --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $TMP_DIR
 
@@ -86,9 +89,11 @@ jobs:
             git sparse-checkout set --no-cone $PATHS_SPACE
             git checkout
             git fetch origin main
+            echo "Checking out main"
             tree -a -I .git
 
             # コミット履歴からマージされたプルリクエストを取得
+            echo "Checking merge commits since $LAST_SYNC_AT"
             MERGE_COMMITS=$(git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS_SPACE)
             echo $MERGE_COMMITS
             MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | tr '\n' ',' | sed 's/,$//' || echo '')
@@ -104,6 +109,7 @@ jobs:
             fi
 
             # ファイル同期
+            echo "Syncing files"
             tree -a -I .git
             rsync $TMP_DIR/ . -r --exclude '.git/'
             tree -a -I .git
@@ -111,6 +117,7 @@ jobs:
             rm -rf $TMP_DIR
   
             # コミット作成
+            echo "Creating commit"
             git add .
             git commit -m "Update file from source repository" || echo "No changes to commit"
             git push origin $FILE_SYNC_BRANCH_BASE
@@ -123,6 +130,7 @@ jobs:
             #  ! [remote rejected] file-sync/sync-test-b -> file-sync/sync-test-b (refusing to allow a GitHub App to create or update workflow `.github/workflows/repo-file-sync.yaml` without `workflows` permission)
 
             # プルリクエストを作成
+            echo "Creating pull request"
             gh pr create \
             -B main -H $FILE_SYNC_BRANCH_NEW \
             --reviewer kagankan \
