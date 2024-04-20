@@ -98,6 +98,13 @@ jobs:
 
             popd
 
+            # merged_pullsが空の場合は何もしない
+            if [ -z "$MERGED_PULLS" ]; then
+              echo "No changes to commit"
+              continue
+            fi
+
+            # ファイル同期
             FILE_SYNC_BRANCH_BASE="file-sync/$repo"
             FILE_SYNC_BRANCH_NEW="file-sync/$repo-${{ github.run_id }}"
             tree -a -I .git
