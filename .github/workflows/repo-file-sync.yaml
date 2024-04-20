@@ -68,9 +68,10 @@ jobs:
             echo "last_sync_at=$LAST_SYNC_AT" >> $GITHUB_OUTPUT
             echo $LAST_SYNC_AT
 
+            PATHS_SPACE=$(echo "$paths" | sed 's/\n/ /g')
             # 削除ファイルを反映するために一旦削除
             tree
-            rm -rf $(echo "$paths" | sed 's/\n/ /g')
+            rm -rf $PATHS_SPACE
             tree
 
             # クローン
@@ -79,27 +80,23 @@ jobs:
             git clone --filter=blob:none --no-checkout --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
             # git clone https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
 
-            cd $REPO
+            pushd $REPO
             tree -a -I .git
             git config core.sparseCheckout true
-            git sparse-checkout set --no-cone $(echo "$paths" | sed 's/\n/ /g')
+            git sparse-checkout set --no-cone $PATHS_SPACE
             git checkout
             git fetch
             tree -a -I .git
 
             # どういう原理かわからないけど --sparseをつけないと削除が含まれない？っぽい
-            MERGE_COMMITS=$(git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $(echo "$paths" | sed 's/\n/ /g'))
+            MERGE_COMMITS=$(git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS_SPACE)
             echo $MERGE_COMMITS
             MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | tr '\n' ',' | sed 's/,$//' || echo '')
             echo "|$MERGED_PULLS|"
             echo "merged_pulls=$MERGED_PULLS" >> $GITHUB_OUTPUT
 
-            cd ../../
+            popd
 
-            # owner=$(echo "$setting" | jq -r '.owner')
-            # repo=$(echo "$setting" | jq -r '.repo')
-            # paths=$(echo "$setting" | jq -r '.paths[]')
-            # REPO="$owner/$repo"
             FILE_SYNC_BRANCH_BASE="file-sync/$repo"
             FILE_SYNC_BRANCH_NEW="file-sync/$repo-${{ github.run_id }}"
             tree -a -I .git
@@ -108,6 +105,7 @@ jobs:
             # Clean up the cloned repository directory
             rm -rf $REPO
   
+            # コミット作成
             git add .
             git commit -m "Update file from source repository" || echo "No changes to commit"
             git push origin $FILE_SYNC_BRANCH_BASE
@@ -118,10 +116,11 @@ jobs:
             # ワークフローの書き換えにはworkflows権限が必要
             #  ! [remote rejected] file-sync/sync-test-b -> file-sync/sync-test-b (refusing to allow a GitHub App to create or update workflow `.github/workflows/repo-file-sync.yaml` without `workflows` permission)
 
+            # プルリクエストを作成
             gh pr create \
             -B main -H $FILE_SYNC_BRANCH_NEW \
             --reviewer kagankan \
-            --title '取り込み' \
+            --title '$repo 取り込み' \
             --body '自動生成の取り込みです。マージするかクローズしてください。 # TODO: コンフリクト考慮
               ## 関連PR
               $merged_pulls'
