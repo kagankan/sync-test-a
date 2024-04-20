@@ -128,7 +128,7 @@ jobs:
           git cherry-pick $COMMIT_HASH
           git push origin $FILE_SYNC_BRANCH_NEW
       - name: コンフリクトした場合は、機械的な解消は無理なので、「コンフリクトしました」の旨だけPRで知らせる
-        if: ${{ steps.push.conclusion == 'failure' }}
+        if: ${{ steps.push.outcome == 'failure' }}
         run: |
           git cherry-pick --abort
           git commit --allow-empty -m "empty"
