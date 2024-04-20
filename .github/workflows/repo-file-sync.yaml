@@ -41,9 +41,9 @@ jobs:
           echo $LAST_SYNC_AT
 
           # 一旦削除
-          # tree
-          # rm -rf ${{ join(fromJSON(matrix.settings).paths, ' ') }}
-          # tree
+          tree
+          rm -rf ${{ join(fromJSON(matrix.settings).paths, ' ') }}
+          tree
 
       - name: Generate token
         id: generate_token
@@ -136,7 +136,7 @@ jobs:
           #   cp -r tmp/$FILE $FILE #|| rm -f "$FILE"
           # done
           # cp -r tmp/* .
-          rsync tmp/ . --delete -r --exclude '.git/'
+          rsync tmp/ . -r --exclude '.git/'
           tree -a -I .git
           # Clean up the cloned repository directory
           rm -rf tmp
