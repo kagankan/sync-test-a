@@ -96,11 +96,6 @@ jobs:
               return `${parsedOptions.owner}/${parsedOptions.repo}#${pullNumber}: ${pr.title}`;
             }));
 
-            if (prsWithFileChanges.length > 0) {
-              console.log('Changes found');
-            } else {
-              console.log('No changes');
-            }
             core.setOutput('description', prsWithFileChanges.join("\n"));
 
       - name: Sync Repositories
