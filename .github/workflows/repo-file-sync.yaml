@@ -33,22 +33,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: デバッグプリント
-        run: |
-          # SETTINGS を JSON としてパース
-          settings=$(echo "$SETTINGS" | jq -c '.[]')
-          echo $settings
-          # ループ処理
-          echo "$settings" | while IFS= read -r setting; do
-            owner=$(echo "$setting" | jq -r '.owner')
-            repo=$(echo "$setting" | jq -r '.repo')
-            paths=$(echo "$setting" | jq -r '.paths[]')
-
-            echo "Processing $owner/$repo with paths:"
-            for path in $paths; do
-              echo "- $path"
-            done
-          done
       - name: Generate token
         id: generate_token
         uses: tibdex/github-app-token@v1
@@ -62,7 +46,6 @@ jobs:
         run: |
           git config user.name "GitHub App Bot"
           git config user.email "<email@domain.com>"
-          git fetch
 
           settings=$(echo "$SETTINGS" | jq -c '.[]')
 
