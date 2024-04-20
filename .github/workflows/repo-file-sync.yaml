@@ -7,6 +7,7 @@ on:
     - cron: "0 3 * * MON-FRI" # Run workflow at 12:00 JST every MON-FRI
 permissions:
   contents: write
+  workflows: write
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -128,7 +129,7 @@ jobs:
             git cherry-pick $COMMIT_HASH
             git push origin $FILE_SYNC_BRANCH_NEW
             # ワークフローの書き換えにはworkflows権限が必要
-            # Appだけでなくリポジトリの設定が必要
+            # Appだけでなくリポジトリの設定が必要→だめだ
             #  ! [remote rejected] file-sync/sync-test-b -> file-sync/sync-test-b (refusing to allow a GitHub App to create or update workflow `.github/workflows/repo-file-sync.yaml` without `workflows` permission)
 
             # プルリクエストを作成
