@@ -63,7 +63,7 @@ jobs:
             
             #  前回の同期時刻を取得
             FILE_SYNC_BRANCH_BASE="file-sync/$repo"
-            git checkout -B $FILE_SYNC_BRANCH_BASE origin/$FILE_SYNC_BRANCH_BASE || git checkout -b $FILE_SYNC_BRANCH_BASE
+            git checkout -B $FILE_SYNC_BRANCH_BASE origin/$FILE_SYNC_BRANCH_BASE || git checkout -b $FILE_SYNC_BRANCH_BASE origin/main
             LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
             echo "last_sync_at=$LAST_SYNC_AT" >> $GITHUB_OUTPUT
             echo $LAST_SYNC_AT
