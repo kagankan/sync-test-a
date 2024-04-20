@@ -46,7 +46,8 @@ jobs:
           rm -rf $PATHS
           tree
           
-          echo $PATHS
+          echo "$PATHS"
+          echo "$PATHS" | sed 's/ /\n/g'
           PATHS_MULTILINE=$(echo "$PATHS" | sed 's/ /\n/g')
           echo $PATHS_MULTILINE
           PATHS_MULTILINE=$(echo -e "$PATHS" | sed 's/ /\n/g')
