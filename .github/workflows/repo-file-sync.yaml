@@ -136,7 +136,7 @@ jobs:
           #   cp -r tmp/$FILE $FILE #|| rm -f "$FILE"
           # done
           # cp -r tmp/* .
-          rsync tmp/ . --delete  --exclude '.git/'
+          rsync tmp/ . --delete -r --exclude '.git/'
           tree -a -I .git
           # Clean up the cloned repository directory
           rm -rf tmp
