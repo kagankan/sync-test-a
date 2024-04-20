@@ -46,6 +46,7 @@ jobs:
           token: ${{ steps.generate_token.outputs.token }}
       - name: 前回の同期時刻を取得
         env:
+          # ghコマンドを使うために必要
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
           git config user.name "GitHub App Bot"
