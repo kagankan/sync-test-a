@@ -41,7 +41,6 @@ jobs:
           private_key: ${{ secrets.REPO_FILE_SYNC_PRIVATE_KEY }}
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
           # ここに権限を与えないと、workflowsの書き換えができない
           token: ${{ steps.generate_token.outputs.token }}
       - name: 前回の同期時刻を取得
