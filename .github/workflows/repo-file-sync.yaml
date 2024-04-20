@@ -93,12 +93,14 @@ jobs:
             # クローン
             REPO="$owner/$repo"
             # ~~1回の更新までに10件くらいしかないだろうという仮定。0が確実だが、多くなりすぎるため。~~
-            # git clone --filter=blob:none --no-checkout --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
-            git clone https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
+            git clone --filter=blob:none --no-checkout --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
+            # git clone https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
+
             cd $REPO
             tree -a -I .git
             git config core.sparseCheckout true
-            # git sparse-checkout set $(echo "$paths" | sed 's/\n/ /g')
+            git sparse-checkout set $(echo "$paths" | sed 's/\n/ /g')
+            git checkout
             git fetch
 
             # どういう原理かわからないけど --sparseをつけないと削除が含まれない？っぽい
@@ -129,6 +131,8 @@ jobs:
             git checkout -b $FILE_SYNC_BRANCH_NEW origin/main
             git cherry-pick $COMMIT_HASH
             git push origin $FILE_SYNC_BRANCH_NEW
+            # ワークフローの書き換えにはworkflows権限が必要
+            #  ! [remote rejected] file-sync/sync-test-b -> file-sync/sync-test-b (refusing to allow a GitHub App to create or update workflow `.github/workflows/repo-file-sync.yaml` without `workflows` permission)
 
             gh pr create \
             -B main -H $FILE_SYNC_BRANCH_NEW \
