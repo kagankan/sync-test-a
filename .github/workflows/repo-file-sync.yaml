@@ -78,7 +78,7 @@ jobs:
           echo "|$MERGED_PULLS|"
           echo "merged_pulls=$MERGED_PULLS" >> $GITHUB_OUTPUT
 
-      - name: List PRs with changes to specific file
+      - name: タイトルを取得
         uses: actions/github-script@v7
         id: list_prs
         if: ${{ steps.pulls.outputs.merged_pulls != '' }}
