@@ -101,8 +101,6 @@ jobs:
             echo $MERGE_COMMITS
             MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | tr '\n' ',' | sed 's/,$//' || echo '')
             echo "|$MERGED_PULLS|"
-            echo "merged_pulls=$MERGED_PULLS" >> $GITHUB_OUTPUT
-
             popd
 
             # merged_pullsが空の場合は何もしない
@@ -140,6 +138,6 @@ jobs:
             --title '$repo 取り込み' \
             --body '自動生成の取り込みです。マージするかクローズしてください。 # TODO: コンフリクト考慮
               ## 関連PR
-              $merged_pulls'
+              $MERGED_PULLS'
 
           done
