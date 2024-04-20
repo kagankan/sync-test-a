@@ -41,7 +41,6 @@ jobs:
           app_id: ${{ secrets.REPO_FILE_SYNC_APP_ID }}
           private_key: ${{ secrets.REPO_FILE_SYNC_PRIVATE_KEY }}
       - name: 前回の同期時刻を取得
-        id: setup
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
@@ -52,7 +51,6 @@ jobs:
 
           # 変更をもってくる
           echo "$settings" | while IFS= read -r setting; do
-
             owner=$(echo "$setting" | jq -r '.owner')
             repo=$(echo "$setting" | jq -r '.repo')
             paths=$(echo "$setting" | jq -r '.paths[]')
@@ -62,8 +60,10 @@ jobs:
               echo "- $path"
             done
             
-            #  前回の同期時刻を取得
             FILE_SYNC_BRANCH_BASE="file-sync/$repo"
+            FILE_SYNC_BRANCH_NEW="file-sync/$repo-${{ github.run_id }}"
+
+            #  前回の同期時刻を取得
             git checkout -B $FILE_SYNC_BRANCH_BASE origin/$FILE_SYNC_BRANCH_BASE || git checkout -b $FILE_SYNC_BRANCH_BASE origin/main
             git pull
             LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
@@ -78,11 +78,11 @@ jobs:
 
             # クローン
             REPO="$owner/$repo"
+            TMP_DIR="$owner/$repo"
             # ~~1回の更新までに10件くらいしかないだろうという仮定。0が確実だが、多くなりすぎるため。~~
-            git clone --filter=blob:none --no-checkout --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
-            # git clone https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $REPO
+            git clone --filter=blob:none --no-checkout --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $TMP_DIR
 
-            pushd $REPO
+            pushd $TMP_DIR
             tree -a -I .git
             git config core.sparseCheckout true
             git sparse-checkout set --no-cone $PATHS_SPACE
@@ -90,7 +90,7 @@ jobs:
             git fetch
             tree -a -I .git
 
-            # どういう原理かわからないけど --sparseをつけないと削除が含まれない？っぽい
+            # コミット履歴からマージされたプルリクエストを取得
             MERGE_COMMITS=$(git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS_SPACE)
             echo $MERGE_COMMITS
             MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | tr '\n' ',' | sed 's/,$//' || echo '')
@@ -106,13 +106,11 @@ jobs:
             fi
 
             # ファイル同期
-            FILE_SYNC_BRANCH_BASE="file-sync/$repo"
-            FILE_SYNC_BRANCH_NEW="file-sync/$repo-${{ github.run_id }}"
             tree -a -I .git
-            rsync $REPO/ . -r --exclude '.git/'
+            rsync $TMP_DIR/ . -r --exclude '.git/'
             tree -a -I .git
             # Clean up the cloned repository directory
-            rm -rf $REPO
+            rm -rf $TMP_DIR
   
             # コミット作成
             git add .
