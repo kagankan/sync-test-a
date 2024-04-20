@@ -44,10 +44,10 @@ jobs:
           tree
           rm -rf ${{ join(fromJSON(matrix.settings).paths, ' ') }}
           tree
-          #             core.setOutput('targetPaths', ${{ matrix.settings }}.paths.join('\n'));
-          echo ${{ matrix.settings }} | jq -r '.paths[]'
-          echo ${{ matrix.settings }} | jq -r '.paths[]' >> $GITHUB_OUTPUT
-
+          
+          PATHS=$(echo "${{ join(fromJSON(matrix.settings).paths, ' ') }}" | tr ' ' '\n')
+          echo "$PATHS"
+          echo "paths=$PATHS" >> $GITHUB_OUTPUT
 
       - name: Generate token
         id: generate_token
