@@ -81,7 +81,7 @@ jobs:
             echo "$MERGED_PULLS"
             echo EOF
           } >> "$GITHUB_OUTPUT"
-          echo "$MERGED_PULLS"
+          echo "|$MERGED_PULLS|"
 
       - name: List PRs with changes to specific file
         uses: actions/github-script@v7
