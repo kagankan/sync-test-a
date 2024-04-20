@@ -7,7 +7,6 @@ on:
     - cron: "0 3 * * MON-FRI" # Run workflow at 12:00 JST every MON-FRI
 permissions:
   contents: write
-  workflows: write
 jobs:
   sync:
     runs-on: ubuntu-latest
