@@ -1,7 +1,7 @@
 # sync-test-a
 
 追加するよ
-edit
+edit ee
 ブランチで編集
 
 あああ
