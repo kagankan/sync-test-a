@@ -85,7 +85,6 @@ jobs:
             REPO="$owner/$repo"
             TMP_DIR="$owner/$repo"
             echo "Cloning $REPO"
-            # ~~1回の更新までに10件くらいしかないだろうという仮定。0が確実だが、多くなりすぎるため。~~
             git clone --filter=blob:none --no-checkout --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO.git $TMP_DIR
 
             pushd $TMP_DIR
@@ -93,9 +92,9 @@ jobs:
             git config core.sparseCheckout true
             git sparse-checkout set --no-cone $PATHS_SPACE
             git checkout
+            # depth決めてもいいかも
             git fetch origin main
             echo "Checking out main"
-            tree -a -I .git
 
             # コミット履歴からマージされたプルリクエストを取得
             echo "Checking merge commits since $LAST_SYNC_AT"
@@ -113,10 +112,7 @@ jobs:
 
             # ファイル同期
             echo "Syncing files"
-            tree -a -I .git
             rsync $TMP_DIR/ . -r --exclude '.git/'
-            tree -a -I .git
-            # Clean up the cloned repository directory
             rm -rf $TMP_DIR
   
             # コミット作成
