@@ -193,6 +193,6 @@ jobs:
           - 反映する必要がない場合：クローズしてください。" || echo '自動生成の取り込みです。マージするかクローズしてください。')
 
           ## 関連PR
-          $($INITIAL && echo '初回反映です' || echo $MERGED_PULLS)"
+          $($INITIAL && echo '初回反映です' || echo "$MERGED_PULLS")"
 
           done
