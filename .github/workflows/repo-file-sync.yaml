@@ -165,6 +165,7 @@ jobs:
               git checkout --theirs .
               git add . ":!$TMP_DIR"
               git cherry-pick --continue
+              git branch
               git push origin $FILE_SYNC_BRANCH_TMP
             }
             git push origin $FILE_SYNC_BRANCH_NEW
