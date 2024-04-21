@@ -111,7 +111,7 @@ jobs:
             if [ -z "$MERGE_COMMITS" ]; then
               echo "反映する変更がありません"
               rm -rf $TMP_DIR
-            　popd
+              popd
               continue
             fi
 
