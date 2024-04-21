@@ -125,6 +125,7 @@ jobs:
 
             # 前回時点のコミットに移動
             git checkout $(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
+            git log --graph
 
             popd
             
