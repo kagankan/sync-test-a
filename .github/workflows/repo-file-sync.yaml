@@ -119,10 +119,8 @@ jobs:
 
             popd
             
-            # ファイル同期
-            echo $MERGE_COMMITS
-            # 削除ファイルあった場合に反映するために一旦削除
-            rm -rf $PATHS
+            # 前回時点のファイル同期
+            rm -rf $PATHS # 削除ファイルを反映するために一旦削除
             rsync $TMP_DIR/ . -r --exclude '.git/'
 
             # コミット作成
@@ -133,13 +131,11 @@ jobs:
             pushd $TMP_DIR
 
             git checkout origin/main
-            
 
             popd
             
-            # ファイル同期
-            # 削除ファイルあった場合に反映するために一旦削除
-            rm -rf $PATHS
+            # 追加分のファイル同期
+            rm -rf $PATHS # 削除ファイルを反映するために一旦削除
             rsync $TMP_DIR/ . -r --exclude '.git/'
 
             # コミット作成
@@ -165,7 +161,6 @@ jobs:
               git add .
               git cherry-pick --continue
             }
-            echo "CONFLICT: $CONFLICT"
             git push origin $FILE_SYNC_BRANCH_NEW
 
             # スラッシュが入るため、デリミタを変える
