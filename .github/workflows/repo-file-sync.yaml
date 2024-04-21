@@ -57,7 +57,7 @@ jobs:
               page: 1,
             });
             console.log(runs)
-            return runs[1].status;
+            return runs.workflow_runs[1].run_started_at;
         #env:
         #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: ファイル反映
