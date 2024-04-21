@@ -94,9 +94,7 @@ jobs:
             specified_date_epoch=$(date -d "$LAST_SYNC_AT" +%s)
 
             # 日付の比較
-            if [ "$latest_commit_epoch" -ge "$specified_date_epoch" ]; then
-              echo "すすみます"
-            else
+            if [ "$latest_commit_epoch" -lt "$specified_date_epoch" ]; then
               echo "前回の反映以降の更新はありません"
               popd
               rm -rf $TMP_DIR
