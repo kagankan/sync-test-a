@@ -117,7 +117,7 @@ jobs:
 
             # 前回時点のコミットに移動
             COMMIT=$(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
-            git checkout $COMMIT
+            git -c advice.detachedHead=false checkout $COMMIT
             git log --graph
 
             popd
