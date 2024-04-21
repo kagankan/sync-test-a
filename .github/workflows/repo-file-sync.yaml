@@ -58,23 +58,20 @@ jobs:
             owner=$(echo "$setting" | jq -r '.owner')
             repo=$(echo "$setting" | jq -r '.repo')
             PATHS=$(echo "$setting" | jq -r '.paths[]' | sed 's/\n/ /g')
+            FILE_SYNC_BRANCH_BASE="file-sync/$repo"
+            FILE_SYNC_BRANCH_NEW="file-sync/$repo-${{ github.run_id }}"
 
             echo "========================================"
             echo "$owner/$repo の反映"
             echo "========================================"
             
-            FILE_SYNC_BRANCH_BASE="file-sync/$repo"
-            FILE_SYNC_BRANCH_NEW="file-sync/$repo-${{ github.run_id }}"
 
             {
               git fetch origin $FILE_SYNC_BRANCH_BASE
               git checkout -B $FILE_SYNC_BRANCH_BASE origin/$FILE_SYNC_BRANCH_BASE
-            } || git checkout -b $FILE_SYNC_BRANCH_BASE origin/main  # ブランチが存在しない場合はmainから作成
+            } || git checkout -b file-sync/sync-test-c origin/main  # ブランチが存在しない場合はmainから作成
             #  前回の同期時刻を取得
             LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
-
-            # 削除ファイルを反映するために一旦削除
-            rm -rf $PATHS
 
             # クローン
             REPO_FULL="$owner/$repo"
@@ -102,6 +99,8 @@ jobs:
             
             # ファイル同期
             echo $MERGE_COMMITS
+            # 削除ファイルあった場合に反映するために一旦削除
+            rm -rf $PATHS
             rsync $TMP_DIR/ . -r --exclude '.git/'
             rm -rf $TMP_DIR
 
