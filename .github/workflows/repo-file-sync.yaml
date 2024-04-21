@@ -57,13 +57,10 @@ jobs:
           echo "$settings" | while IFS= read -r setting; do
             owner=$(echo "$setting" | jq -r '.owner')
             repo=$(echo "$setting" | jq -r '.repo')
-            paths=$(echo "$setting" | jq -r '.paths[]')
+            PATHS=$(echo "$setting" | jq -r '.paths[]' | sed 's/\n/ /g')
 
             echo "========================================"
-            echo "Processing $owner/$repo with paths:"
-            for path in $paths; do
-            echo "- $path"
-            done
+            echo "$owner/$repo の反映"
             echo "========================================"
             
             FILE_SYNC_BRANCH_BASE="file-sync/$repo"
@@ -76,10 +73,9 @@ jobs:
             LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
             echo "Last sync at: $LAST_SYNC_AT"
 
-            PATHS_SPACE=$(echo "$paths" | sed 's/\n/ /g')
 
             # 削除ファイルを反映するために一旦削除
-            rm -rf $PATHS_SPACE
+            rm -rf $PATHS
 
             # クローン
             REPO_FULL="$owner/$repo"
@@ -90,7 +86,7 @@ jobs:
             pushd $TMP_DIR
 
             git config core.sparseCheckout true
-            git sparse-checkout set --no-cone $PATHS_SPACE
+            git sparse-checkout set --no-cone $PATHS
             git checkout
             # depth決めてもいいかも
             git fetch origin main
@@ -98,13 +94,13 @@ jobs:
 
             # コミット履歴からマージされたプルリクエストを取得
             echo "Checking merge commits since $LAST_SYNC_AT"
-            MERGE_COMMITS=$(git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS_SPACE)
+            MERGE_COMMITS=$(git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS)
             echo $MERGE_COMMITS
             popd
 
             # MERGE_COMMITSが空の場合は何もしない
             if [ -z "$MERGE_COMMITS" ]; then
-              echo "No changes to commit"
+              echo "反映する変更がありません"
               rm -rf $TMP_DIR
               continue
             fi
@@ -139,7 +135,6 @@ jobs:
 
             # スラッシュが入るため、デリミタを変える
             MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | sed "s|^|$REPO_FULL|" || echo '')
-            echo "|$MERGED_PULLS|"
 
             # プルリクエストを作成
             echo "Creating pull request"
