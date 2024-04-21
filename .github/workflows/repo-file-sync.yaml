@@ -66,10 +66,15 @@ jobs:
             echo "========================================"
             
 
+            INITIAL=false
             {
               git fetch origin $FILE_SYNC_BRANCH_BASE
               git checkout -B $FILE_SYNC_BRANCH_BASE origin/$FILE_SYNC_BRANCH_BASE
-            } || git checkout -b file-sync/sync-test-c origin/main  # ブランチが存在しない場合はmainから作成
+            } || {
+              # ブランチが存在しない場合はmainから作成
+              INITIAL=true
+              git checkout -b file-sync/sync-test-c origin/main  
+            }
             #  前回の同期時刻を取得
             LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
 
@@ -87,7 +92,7 @@ jobs:
             git fetch origin main
 
             # コミット履歴からマージされたプルリクエストを取得
-            MERGE_COMMITS=$(git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS)
+            MERGE_COMMITS=$(INITIAL && echo "初回反映です" || git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS)
             popd
             
             # MERGE_COMMITSが空の場合は何もしない
