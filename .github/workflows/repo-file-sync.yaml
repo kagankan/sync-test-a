@@ -91,19 +91,19 @@ jobs:
             paths=$(echo "$setting" | jq -r '.paths[]' | sed 's/\n/ /g')
             FILE_SYNC_BRANCH_TMP="file-sync/$repo/tmp"
             FILE_SYNC_BRANCH_NEW="file-sync/$repo/${{ github.run_id }}"
+            REPO_FULL="$owner/$repo"
+            TMP_DIR="tmp"
 
             echo "========================================"
             echo "$owner/$repo の反映"
             echo "========================================"
 
             # クローン
-            REPO_FULL="$owner/$repo"
-            TMP_DIR="tmp"
-            cd $workspace_dir
             # 直近20件以内にはあるだろう、という決め打ち
             git clone --filter=blob:none --no-checkout --sparse --depth 20 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR
             
-            cd "$workspace_dir/$TMP_DIR"
+            echo "========================================"
+            pushd $TMP_DIR
 
             # コミット履歴からマージされたプルリクエストを取得
             # mergesがないと関係ないコミットも拾ってしまった
@@ -112,21 +112,29 @@ jobs:
             # MERGE_COMMITSが空の場合は何もしない
             if [ -z "$MERGE_COMMITS" ] && [ $INITIAL = false ]; then
               echo "反映する変更がありません"
+              echo "========================================"
+              popd
+              rm -rf $TMP_DIR
               continue
             fi
 
             # sparse-checkoutを設定
             git config core.sparseCheckout true
             git sparse-checkout set --no-cone $paths
-            git checkout -b $FILE_SYNC_BRANCH_TMP origin/main  
+            git checkout
 
+            # 作業ブランチを作成
+            popd
+            git checkout -b $FILE_SYNC_BRANCH_TMP origin/main  
+            
             # 初回は丸ごとコピーするので、前回時点のファイルを反映しない
             if [ $INITIAL = false ]; then
               # 前回時点のファイルを反映
+              pushd $TMP_DIR
               COMMIT=$(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
               echo "COMMIT: $COMMIT"
               git -c advice.detachedHead=false checkout $COMMIT
-              cd $workspace_dir
+              popd
               rm -rf $paths # 削除ファイルを反映するために一旦削除
               rsync $TMP_DIR/ . -r --exclude '.git/'
 
@@ -136,9 +144,9 @@ jobs:
             fi
 
             # 追加分のファイル同期
-            cd "$workspace_dir/$TMP_DIR"
+            pushd $TMP_DIR
             git checkout origin/main
-            cd $workspace_dir
+            popd
             rm -rf $paths # 削除ファイルを反映するために一旦削除
             rsync $TMP_DIR/ . -r --exclude '.git/'
 
@@ -165,7 +173,6 @@ jobs:
               git checkout --theirs .
               git add . ":!$TMP_DIR"
               git cherry-pick --continue
-              git branch
               git push origin $FILE_SYNC_BRANCH_TMP
             }
             git push origin $FILE_SYNC_BRANCH_NEW
