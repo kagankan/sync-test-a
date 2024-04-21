@@ -75,6 +75,8 @@ jobs:
           # PREVIOUS_RUNがない場合は初回
           [ -z "$PREVIOUS_RUN" ] && INITIAL=true || INITIAL=false
 
+          workspace_dir=$(pwd)
+
           # SETTINGSをループ
           settings=$(echo "$SETTINGS" | jq -c '.[]')
           for setting in $settings; do
@@ -91,10 +93,11 @@ jobs:
             # クローン
             REPO_FULL="$owner/$repo"
             TMP_DIR="tmp"
+            cd $workspace_dir
             # 直近20件以内にはあるだろう、という決め打ち
             git clone --filter=blob:none --no-checkout --sparse --depth 20 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR
             
-            pushd $TMP_DIR
+            cd $TMP_DIR
 
             # コミット履歴からマージされたプルリクエストを取得
             # mergesがないと関係ないコミットも拾ってしまった
@@ -103,45 +106,40 @@ jobs:
             # MERGE_COMMITSが空の場合は何もしない
             if [ -z "$MERGE_COMMITS" ] && [ $INITIAL = false ]; then
               echo "反映する変更がありません"
-              popd
               continue
             fi
 
             # sparse-checkoutを設定
             git config core.sparseCheckout true
             git sparse-checkout set --no-cone $paths
-            git checkout
+            git checkout -b $FILE_SYNC_BRANCH_TMP origin/main  
 
-            # 前回時点のコミットに移動
+            # 前回時点のファイルを反映
+            cd $TMP_DIR
             COMMIT=$(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
             echo "COMMIT: $COMMIT"
             git -c advice.detachedHead=false checkout $COMMIT
-
-            popd
-            
-            # 前回時点のファイル同期
+            cd $workspace_dir
             rm -rf $paths # 削除ファイルを反映するために一旦削除
             rsync $TMP_DIR/ . -r --exclude '.git/'
 
             # コミット作成
-            git checkout -b $FILE_SYNC_BRANCH_TMP origin/main  
             git add . ":!$TMP_DIR"
             git commit -m "$repo の前回時点を反映" || echo "No changes to commit"
 
             # 追加分のファイル同期
-            pushd $TMP_DIR
+            cd $TMP_DIR
             git checkout origin/main
-            popd
+            cd $workspace_dir
             rm -rf $paths # 削除ファイルを反映するために一旦削除
             rsync $TMP_DIR/ . -r --exclude '.git/'
 
             # コミット作成
             git add . ":!$TMP_DIR"
             git commit -m "$repo の変更を反映" || echo "No changes to commit"
-            git log --graph
+
             COMMIT_HASH=$(git rev-parse HEAD)
             git checkout -b $FILE_SYNC_BRANCH_NEW origin/main  
-
             rm -rf $TMP_DIR
 
             CONFLICT=false
