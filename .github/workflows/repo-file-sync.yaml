@@ -66,16 +66,12 @@ jobs:
             FILE_SYNC_BRANCH_BASE="file-sync/$repo"
             FILE_SYNC_BRANCH_NEW="file-sync/$repo-${{ github.run_id }}"
 
-            #  前回の同期時刻を取得
-            echo "Checking out $FILE_SYNC_BRANCH_BASE"
-            # ブランチが存在しない場合はmainから作成
             {
               git fetch origin $FILE_SYNC_BRANCH_BASE
               git checkout -B $FILE_SYNC_BRANCH_BASE origin/$FILE_SYNC_BRANCH_BASE
-            } || git checkout -b $FILE_SYNC_BRANCH_BASE origin/main
+            } || git checkout -b $FILE_SYNC_BRANCH_BASE origin/main  # ブランチが存在しない場合はmainから作成
+            #  前回の同期時刻を取得
             LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
-            echo "Last sync at: $LAST_SYNC_AT"
-
 
             # 削除ファイルを反映するために一旦削除
             rm -rf $PATHS
@@ -83,7 +79,6 @@ jobs:
             # クローン
             REPO_FULL="$owner/$repo"
             TMP_DIR="tmp"
-            echo "Cloning $REPO_FULL"
             git clone --filter=blob:none --no-checkout --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR
 
             pushd $TMP_DIR
@@ -93,28 +88,24 @@ jobs:
             git checkout
             # depth決めてもいいかも
             git fetch origin main
-            echo "Checking out main"
 
             # コミット履歴からマージされたプルリクエストを取得
-            echo "Checking merge commits since $LAST_SYNC_AT"
             MERGE_COMMITS=$(git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS)
-            echo $MERGE_COMMITS
             popd
-
+            
             # MERGE_COMMITSが空の場合は何もしない
             if [ -z "$MERGE_COMMITS" ]; then
               echo "反映する変更がありません"
               rm -rf $TMP_DIR
               continue
             fi
-
+            
             # ファイル同期
-            echo "Syncing files"
+            echo $MERGE_COMMITS
             rsync $TMP_DIR/ . -r --exclude '.git/'
             rm -rf $TMP_DIR
 
             # コミット作成
-            echo "Creating commit"
             git add .
             git commit -m "$repo の変更を反映" || echo "No changes to commit"
             COMMIT_HASH=$(git rev-parse HEAD)
