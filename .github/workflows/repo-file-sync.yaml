@@ -100,14 +100,12 @@ jobs:
             echo "Checking merge commits since $LAST_SYNC_AT"
             MERGE_COMMITS=$(git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS_SPACE)
             echo $MERGE_COMMITS
-            # スラッシュが入るため、デリミタを変える
-            MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | sed "s|^|$REPO_FULL|" || echo '')
-            echo "|$MERGED_PULLS|"
             popd
 
-            # merged_pullsが空の場合は何もしない
-            if [ -z "$MERGED_PULLS" ]; then
+            # MERGE_COMMITSが空の場合は何もしない
+            if [ -z "$MERGE_COMMITS" ]; then
               echo "No changes to commit"
+              rm -rf $TMP_DIR
               continue
             fi
 
@@ -115,7 +113,7 @@ jobs:
             echo "Syncing files"
             rsync $TMP_DIR/ . -r --exclude '.git/'
             rm -rf $TMP_DIR
-  
+
             # コミット作成
             echo "Creating commit"
             git add .
@@ -138,6 +136,10 @@ jobs:
             }
             echo "CONFLICT: $CONFLICT"
             git push origin $FILE_SYNC_BRANCH_NEW
+
+            # スラッシュが入るため、デリミタを変える
+            MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | sed "s|^|$REPO_FULL|" || echo '')
+            echo "|$MERGED_PULLS|"
 
             # プルリクエストを作成
             echo "Creating pull request"
