@@ -80,7 +80,6 @@ jobs:
             echo "========================================"
             echo "$owner/$repo の反映"
             echo "========================================"
-            
 
             INITIAL=false
             #  前回の同期時刻を取得
@@ -99,7 +98,6 @@ jobs:
             git config core.sparseCheckout true
             git sparse-checkout set --no-cone $PATHS
             git checkout
-
 
             # コミット履歴からマージされたプルリクエストを取得
             # mergesがないと関係ないコミットも拾ってしまった
