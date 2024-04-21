@@ -69,25 +69,24 @@ jobs:
           git config user.name "file-sync [bot]"
           git config user.email "<email@example.com>"
 
-          settings=$(echo "$SETTINGS" | jq -c '.[]')
+          #  前回の同期時刻を取得
+          PREVIOUS_RUN="${{ steps.get_previous_status.outputs.result }}"
+          echo "PREVIOUS_RUN: $PREVIOUS_RUN"
+          # PREVIOUS_RUNがない場合は初回
+          [ -z "$PREVIOUS_RUN" ] && INITIAL=true || INITIAL=false
 
-          # 変更をもってくる
+          # SETTINGSをループ
+          settings=$(echo "$SETTINGS" | jq -c '.[]')
           for setting in $settings; do
             owner=$(echo "$setting" | jq -r '.owner')
             repo=$(echo "$setting" | jq -r '.repo')
-            PATHS=$(echo "$setting" | jq -r '.paths[]' | sed 's/\n/ /g')
+            paths=$(echo "$setting" | jq -r '.paths[]' | sed 's/\n/ /g')
             FILE_SYNC_BRANCH_TMP="file-sync/$repo/tmp"
             FILE_SYNC_BRANCH_NEW="file-sync/$repo/${{ github.run_id }}"
 
             echo "========================================"
             echo "$owner/$repo の反映"
             echo "========================================"
-
-            #  前回の同期時刻を取得
-            LAST_SYNC_AT="${{ steps.get_previous_status.outputs.result }}"
-            echo "LAST_SYNC_AT: $LAST_SYNC_AT"
-            # LAST_SYNC_ATがない場合は初回
-            [ -z "$LAST_SYNC_AT" ] && INITIAL=true || INITIAL=false
 
             # クローン
             REPO_FULL="$owner/$repo"
@@ -96,21 +95,22 @@ jobs:
             git clone --filter=blob:none --no-checkout --sparse --depth 20 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR
             
             pushd $TMP_DIR
-            
-            git config core.sparseCheckout true
-            git sparse-checkout set --no-cone $PATHS
-            git checkout
 
             # コミット履歴からマージされたプルリクエストを取得
             # mergesがないと関係ないコミットも拾ってしまった
-            MERGE_COMMITS=$($INITIAL && echo "初回反映です" || git log --sparse --merges --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS)
+            MERGE_COMMITS=$(git log --sparse --merges --first-parent --since "$PREVIOUS_RUN" --oneline --pretty=format:'%s' -- $paths)
             
             # MERGE_COMMITSが空の場合は何もしない
-            if [ -z "$MERGE_COMMITS" ]; then
+            if [ -z "$MERGE_COMMITS" ] && [ $INITIAL = false ]; then
               echo "反映する変更がありません"
               popd
               continue
             fi
+
+            # sparse-checkoutを設定
+            git config core.sparseCheckout true
+            git sparse-checkout set --no-cone $paths
+            git checkout
 
             # 前回時点のコミットに移動
             COMMIT=$(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
@@ -120,7 +120,7 @@ jobs:
             popd
             
             # 前回時点のファイル同期
-            rm -rf $PATHS # 削除ファイルを反映するために一旦削除
+            rm -rf $paths # 削除ファイルを反映するために一旦削除
             rsync $TMP_DIR/ . -r --exclude '.git/'
 
             # コミット作成
@@ -132,7 +132,7 @@ jobs:
             pushd $TMP_DIR
             git checkout origin/main
             popd
-            rm -rf $PATHS # 削除ファイルを反映するために一旦削除
+            rm -rf $paths # 削除ファイルを反映するために一旦削除
             rsync $TMP_DIR/ . -r --exclude '.git/'
 
             # コミット作成
@@ -155,7 +155,7 @@ jobs:
               }
 
               CONFLICT=true
-              echo "コンフリクト"
+              echo "コンフリクトしました"
               git checkout --theirs .
               git add . ":!$TMP_DIR"
               git cherry-pick --continue
