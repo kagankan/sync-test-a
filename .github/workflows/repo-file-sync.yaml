@@ -83,10 +83,11 @@ jobs:
             echo "$owner/$repo の反映"
             echo "========================================"
 
-            INITIAL=false
             #  前回の同期時刻を取得
             LAST_SYNC_AT="${{ steps.get_previous_status.outputs.result }}"
             echo "LAST_SYNC_AT: $LAST_SYNC_AT"
+            # LAST_SYNC_ATがない場合は初回
+            [ -z "$LAST_SYNC_AT" ] && INITIAL=true || INITIAL=false
 
             # クローン
             REPO_FULL="$owner/$repo"
