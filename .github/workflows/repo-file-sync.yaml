@@ -93,7 +93,7 @@ jobs:
               git checkout -b file-sync/sync-test-c origin/main  
             }
             #  前回の同期時刻を取得
-            LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
+            LAST_SYNC_AT="${{ steps.get_previous_status.outputs.result }}"
             echo "LAST_SYNC_AT: $LAST_SYNC_AT"
 
             # クローン
