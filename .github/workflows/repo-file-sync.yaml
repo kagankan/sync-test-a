@@ -55,11 +55,16 @@ jobs:
               workflow_id: "repo-file-sync.yaml",
               per_page: 2,
             });
-            console.log(runs)
-            // return runs.workflow_runs[1].run_started_at;
+            console.log(runs);
+            const previousRun = runs.workflow_runs[1];
+            if (!previousRun) {
+              // 初回の場合は空文字を返す
+              return '';
+            }
+            // return previousRun.run_started_at;
             // デバッグのため固定値
             // return '2024-04-21T11:50:03Z';
-            return ''; // 初回の場合は空文字を返す
+            return '';
         #env:
         #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: ファイル反映
@@ -98,7 +103,7 @@ jobs:
             # 直近20件以内にはあるだろう、という決め打ち
             git clone --filter=blob:none --no-checkout --sparse --depth 20 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR
             
-            cd $TMP_DIR
+            cd "$workspace_dir/$TMP_DIR"
 
             # コミット履歴からマージされたプルリクエストを取得
             # mergesがないと関係ないコミットも拾ってしまった
@@ -115,20 +120,23 @@ jobs:
             git sparse-checkout set --no-cone $paths
             git checkout -b $FILE_SYNC_BRANCH_TMP origin/main  
 
-            # 前回時点のファイルを反映
-            COMMIT=$(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
-            echo "COMMIT: $COMMIT"
-            git -c advice.detachedHead=false checkout $COMMIT
-            cd $workspace_dir
-            rm -rf $paths # 削除ファイルを反映するために一旦削除
-            rsync $TMP_DIR/ . -r --exclude '.git/'
+            # 初回は丸ごとコピーするので、前回時点のファイルを反映しない
+            if [ $INITIAL = false ]; then
+              # 前回時点のファイルを反映
+              COMMIT=$(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
+              echo "COMMIT: $COMMIT"
+              git -c advice.detachedHead=false checkout $COMMIT
+              cd $workspace_dir
+              rm -rf $paths # 削除ファイルを反映するために一旦削除
+              rsync $TMP_DIR/ . -r --exclude '.git/'
 
-            # コミット作成
-            git add . ":!$TMP_DIR"
-            git commit -m "$repo の前回時点を反映" || echo "No changes to commit"
+              # コミット作成
+              git add . ":!$TMP_DIR"
+              git commit -m "$repo の前回時点を反映" || echo "No changes to commit"
+            fi
 
             # 追加分のファイル同期
-            cd $TMP_DIR
+            cd "$workspace_dir/$TMP_DIR"
             git checkout origin/main
             cd $workspace_dir
             rm -rf $paths # 削除ファイルを反映するために一旦削除
@@ -157,6 +165,7 @@ jobs:
               git checkout --theirs .
               git add . ":!$TMP_DIR"
               git cherry-pick --continue
+              git push origin $FILE_SYNC_BRANCH_TMP
             }
             git push origin $FILE_SYNC_BRANCH_NEW
 
@@ -172,7 +181,7 @@ jobs:
             --body "$($CONFLICT && echo "反映中にコンフリクトが発生しました。
             
           - 上書きする場合：このままマージしてください。
-          - 手動で修正する場合： \`git cherry-pick $COMMIT_HASH\` を実行して修正の上で別途PRを作成してください。
+          - 手動で修正する場合：このPRはクローズし、新しいブランチで \`git cherry-pick $COMMIT_HASH\` を実行してPRを作成してください。
           - 反映する必要がない場合：クローズしてください。" || echo '自動生成の取り込みです。マージするかクローズしてください。')
 
           ## 関連PR
