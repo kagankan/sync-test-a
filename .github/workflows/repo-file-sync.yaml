@@ -43,6 +43,23 @@ jobs:
         with:
           # ここに権限を与えないと、workflowsの書き換えができない
           token: ${{ steps.generate_token.outputs.token }}
+      - name: Get Previous Run Status
+        id: get_previous_status
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: runs } = await github.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: context.workflow,
+              per_page: 2,
+              page: 1,
+            });
+            console.log(runs)
+            return runs[1].status;
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: ファイル反映
         env:
           # ghコマンドを使うために必要
