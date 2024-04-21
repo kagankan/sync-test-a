@@ -133,14 +133,34 @@ jobs:
             # 削除ファイルあった場合に反映するために一旦削除
             rm -rf $PATHS
             rsync $TMP_DIR/ . -r --exclude '.git/'
-            rm -rf $TMP_DIR
+            # rm -rf $TMP_DIR
 
             # コミット作成
-            git add . ":!$TMP_DIR"
+            git checkout -b $FILE_SYNC_BRANCH_NEW origin/main            git add . ":!$TMP_DIR"
             git commit -m "$repo の前回時点を反映" || echo "No changes to commit"
             # git commit -m "$repo の変更を反映" || echo "No changes to commit"
             # git push origin $FILE_SYNC_BRANCH_BASE
-            git checkout -b $FILE_SYNC_BRANCH_NEW origin/main
+
+
+            pushd $TMP_DIR
+
+            git checkout origin/main
+            
+
+            popd
+            
+            # # ファイル同期
+            # echo $MERGE_COMMITS
+            # 削除ファイルあった場合に反映するために一旦削除
+            rm -rf $PATHS
+            rsync $TMP_DIR/ . -r --exclude '.git/'
+            # rm -rf $TMP_DIR
+
+            # コミット作成
+            git add . ":!$TMP_DIR"
+            git commit -m "$repo の変更を反映" || echo "No changes to commit"
+            # git push origin $FILE_SYNC_BRANCH_BASE
+
 
             CONFLICT=false
             # コンフリクトしたときと、何も差分がないときにエラーになる
