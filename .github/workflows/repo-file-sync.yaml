@@ -52,7 +52,7 @@ jobs:
             const { data: runs } = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: context.workflow,
+              workflow_id: "repo-file-sync.yaml",
               per_page: 2,
               page: 1,
             });
