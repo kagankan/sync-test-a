@@ -85,11 +85,23 @@ jobs:
             git clone --filter=blob:none --no-checkout --sparse --depth 1 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR
             
             pushd $TMP_DIR
-            echo "log 1"
-            git log --oneline
-            git fetch --shallow-since='"$LAST_SYNC_AT"'
-            echo "log 2"
-            git log --oneline
+         
+            # HEADがLAST_SYNC_ATよりも古ければ、これ以降の処理スキップ
+
+            LAST_COMMIT_AT=$(git log -1 --format=%ci HEAD)
+
+            latest_commit_epoch=$(date -d "$LAST_COMMIT_AT" +%s)
+            specified_date_epoch=$(date -d "$LAST_SYNC_AT" +%s)
+
+            # 日付の比較
+            if [ "$latest_commit_epoch" -ge "$specified_date_epoch" ]; then
+              echo "すすみます"
+            else
+              echo "前回の反映以降の更新はありません"
+              popd
+              rm -rf $TMP_DIR
+              continue
+            fi
             
             git config core.sparseCheckout true
             git sparse-checkout set --no-cone $PATHS
