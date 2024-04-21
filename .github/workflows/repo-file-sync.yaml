@@ -63,8 +63,8 @@ jobs:
             }
             // return previousRun.run_started_at;
             // デバッグのため固定値
-            // return '2024-04-21T11:50:03Z';
-            return '';
+            return '2024-04-21T11:50:03Z';
+
         #env:
         #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: ファイル反映
