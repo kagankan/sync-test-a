@@ -170,7 +170,7 @@ jobs:
             git push origin $FILE_SYNC_BRANCH_NEW
 
             # スラッシュが入るため、デリミタを変える
-            MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | sed "s|^|$REPO_FULL|" || echo '初回反映です')
+            MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | sed "s|^|$REPO_FULL|")
 
             # プルリクエストを作成
             echo "Creating pull request"
@@ -185,6 +185,6 @@ jobs:
           - 反映する必要がない場合：クローズしてください。" || echo '自動生成の取り込みです。マージするかクローズしてください。')
 
           ## 関連PR
-          $MERGED_PULLS"
+          $($INITIAL && echo '初回反映です' || $MERGED_PULLS)"
 
           done
