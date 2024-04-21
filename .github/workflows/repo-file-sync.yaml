@@ -115,7 +115,6 @@ jobs:
             git checkout -b $FILE_SYNC_BRANCH_TMP origin/main  
 
             # 前回時点のファイルを反映
-            cd $TMP_DIR
             COMMIT=$(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
             echo "COMMIT: $COMMIT"
             git -c advice.detachedHead=false checkout $COMMIT
