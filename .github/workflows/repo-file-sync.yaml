@@ -95,7 +95,8 @@ jobs:
 
 
             # コミット履歴からマージされたプルリクエストを取得
-            MERGE_COMMITS=$($INITIAL && echo "初回反映です" || git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS)
+            # mergesがないと関係ないコミットも拾ってしまった
+            MERGE_COMMITS=$($INITIAL && echo "初回反映です" || git log --sparse --merges --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS)
             popd
             
             # MERGE_COMMITSが空の場合は何もしない
