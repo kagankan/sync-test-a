@@ -100,7 +100,7 @@ jobs:
             echo "Checking merge commits since $LAST_SYNC_AT"
             MERGE_COMMITS=$(git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS_SPACE)
             echo $MERGE_COMMITS
-            MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | sed 's/^/$REPO_FULL/' || echo '')
+            MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | sed "s/^/$REPO_FULL/" || echo '')
             echo "|$MERGED_PULLS|"
             popd
 
