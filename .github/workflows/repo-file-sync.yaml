@@ -58,7 +58,8 @@ jobs:
             console.log(runs)
             // return runs.workflow_runs[1].run_started_at;
             // デバッグのため固定値
-            return '2024-04-21T11:50:03Z';
+            # return '2024-04-21T11:50:03Z';
+            return ''; // 初回の場合は空文字を返す
         #env:
         #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: ファイル反映
