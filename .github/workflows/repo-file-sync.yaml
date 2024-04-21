@@ -75,8 +75,8 @@ jobs:
             owner=$(echo "$setting" | jq -r '.owner')
             repo=$(echo "$setting" | jq -r '.repo')
             PATHS=$(echo "$setting" | jq -r '.paths[]' | sed 's/\n/ /g')
-            FILE_SYNC_BRANCH_BASE="file-sync/$repo"
-            FILE_SYNC_BRANCH_NEW="file-sync/$repo-${{ github.run_id }}"
+            FILE_SYNC_BRANCH_TMP="file-sync/$repo/tmp"
+            FILE_SYNC_BRANCH_NEW="file-sync/$repo/${{ github.run_id }}"
 
             echo "========================================"
             echo "$owner/$repo の反映"
@@ -129,7 +129,7 @@ jobs:
             rsync $TMP_DIR/ . -r --exclude '.git/'
 
             # コミット作成
-            git checkout -b file-sync-tmp origin/main  
+            git checkout -b $FILE_SYNC_BRANCH_TMP origin/main  
             git add . ":!$TMP_DIR"
             git commit -m "$repo の前回時点を反映" || echo "No changes to commit"
 
