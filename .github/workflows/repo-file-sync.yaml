@@ -82,7 +82,12 @@ jobs:
             # クローン
             REPO_FULL="$owner/$repo"
             TMP_DIR="tmp"
-            git clone --filter=blob:none --no-checkout --sparse --depth 10 --shallow-since='"$LAST_SYNC_AT"' https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR
+            git clone --filter=blob:none --no-checkout --sparse --shallow-since='"$LAST_SYNC_AT"' https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR || {
+              # shallow-since で失敗していると判断して、スキップ
+              echo "反映する変更がありません"
+              rm -rf $TMP_DIR
+              continue
+            }
 
             pushd $TMP_DIR
 
@@ -90,21 +95,10 @@ jobs:
             git sparse-checkout set --no-cone $PATHS
             git checkout
 
-            git log --oneline
-            echo "========================================"
-            git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS
-
             # コミット履歴からマージされたプルリクエストを取得
             MERGE_COMMITS=$($INITIAL && echo "初回反映です" || git log --sparse --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS)
             popd
-            
-            # MERGE_COMMITSが空の場合は何もしない
-            if [ -z "$MERGE_COMMITS" ]; then
-              echo "反映する変更がありません"
-              rm -rf $TMP_DIR
-              continue
-            fi
-            
+                        
             # ファイル同期
             echo $MERGE_COMMITS
             # 削除ファイルあった場合に反映するために一旦削除
