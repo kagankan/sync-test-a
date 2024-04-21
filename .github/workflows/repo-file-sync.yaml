@@ -121,15 +121,18 @@ jobs:
             CONFLICT=false
             # コンフリクトしたときと、何も差分がないときにエラーになる
             git cherry-pick $COMMIT_HASH || {
-              CONFLICT=true
-              echo "コンフリクトまたは差分がない"
-              git checkout --theirs .
-              git add .
-              git cherry-pick --continue || {
-                echo "なんにもナッシング"
-                git cherry-pick --abort
+              GIT_STATUS=$(git status -s)
+              [ -z "$GIT_STATUS" ] && {
+                echo "差分がありません"
+                git cherry-pick --skip
                 continue
               }
+
+              CONFLICT=true
+              echo "コンフリクト"
+              git checkout --theirs .
+              git add .
+              git cherry-pick --continue
             }
             echo "CONFLICT: $CONFLICT"
             git push origin $FILE_SYNC_BRANCH_NEW
