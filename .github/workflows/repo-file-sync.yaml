@@ -54,7 +54,6 @@ jobs:
               repo: context.repo.repo,
               workflow_id: "repo-file-sync.yaml",
               per_page: 2,
-              page: 1,
             });
             console.log(runs)
             return runs.workflow_runs[1].run_started_at;
