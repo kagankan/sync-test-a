@@ -77,6 +77,7 @@ jobs:
             }
             #  前回の同期時刻を取得
             LAST_SYNC_AT=$(git log -1 --format=%ci HEAD)
+            echo "LAST_SYNC_AT: $LAST_SYNC_AT"
 
             # クローン
             REPO_FULL="$owner/$repo"
