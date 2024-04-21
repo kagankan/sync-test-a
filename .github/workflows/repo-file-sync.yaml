@@ -89,7 +89,7 @@ jobs:
             owner=$(echo "$setting" | jq -r '.owner')
             repo=$(echo "$setting" | jq -r '.repo')
             paths=$(echo "$setting" | jq -r '.paths[]' | sed 's/\n/ /g')
-            FILE_SYNC_BRANCH_TMP="file-sync/$repo/tmp"
+            FILE_SYNC_BRANCH_TMP="file-sync/$repo/${{ github.run_id }}-tmp"
             FILE_SYNC_BRANCH_NEW="file-sync/$repo/${{ github.run_id }}"
             REPO_FULL="$owner/$repo"
             TMP_DIR="tmp"
@@ -193,6 +193,6 @@ jobs:
           - 反映する必要がない場合：クローズしてください。" || echo '自動生成の取り込みです。マージするかクローズしてください。')
 
           ## 関連PR
-          $($INITIAL && echo '初回反映です' || $MERGED_PULLS)"
+          $($INITIAL && echo '初回反映です' || echo $MERGED_PULLS)"
 
           done
