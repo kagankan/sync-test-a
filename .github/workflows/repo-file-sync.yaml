@@ -91,7 +91,6 @@ jobs:
             # クローン
             REPO_FULL="$owner/$repo"
             TMP_DIR="tmp"
-            rm -rf $TMP_DIR
             # 直近20件以内にはあるだろう、という決め打ち
             git clone --filter=blob:none --no-checkout --sparse --depth 20 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR
             
@@ -158,7 +157,7 @@ jobs:
               CONFLICT=true
               echo "コンフリクト"
               git checkout --theirs .
-              git add .
+              git add . ":!$TMP_DIR"
               git cherry-pick --continue
             }
             git push origin $FILE_SYNC_BRANCH_NEW
