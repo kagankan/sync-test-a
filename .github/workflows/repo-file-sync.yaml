@@ -72,7 +72,7 @@ jobs:
           settings=$(echo "$SETTINGS" | jq -c '.[]')
 
           # 変更をもってくる
-          echo "$settings" | while IFS= read -r setting; do
+          for setting in $settings; do
             owner=$(echo "$setting" | jq -r '.owner')
             repo=$(echo "$setting" | jq -r '.repo')
             PATHS=$(echo "$setting" | jq -r '.paths[]' | sed 's/\n/ /g')
