@@ -114,34 +114,34 @@ jobs:
             # コミット履歴からマージされたプルリクエストを取得
             # mergesがないと関係ないコミットも拾ってしまった
             MERGE_COMMITS=$($INITIAL && echo "初回反映です" || git log --sparse --merges --first-parent --since "$LAST_SYNC_AT" --oneline --pretty=format:'%s' -- $PATHS)
-            popd
             
             # MERGE_COMMITSが空の場合は何もしない
             if [ -z "$MERGE_COMMITS" ]; then
               echo "反映する変更がありません"
               rm -rf $TMP_DIR
+            　popd
               continue
             fi
 
-            last=$(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
-            echo $last
-            git rebase -i -x "git commit --ammend -m 'test'" $last
-            git log
+            # 前回時点のコミットに移動
+            git checkout $(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
 
+            popd
             
-            # ファイル同期
-            echo $MERGE_COMMITS
+            # # ファイル同期
+            # echo $MERGE_COMMITS
             # 削除ファイルあった場合に反映するために一旦削除
             rm -rf $PATHS
             rsync $TMP_DIR/ . -r --exclude '.git/'
             rm -rf $TMP_DIR
 
             # コミット作成
-            git add .
-            git commit -m "$repo の変更を反映" || echo "No changes to commit"
-            COMMIT_HASH=$(git rev-parse HEAD)
-            git push origin $FILE_SYNC_BRANCH_BASE
+            git add . ":!$TMP_DIR"
+            git commit -m "$repo の前回時点を反映" || echo "No changes to commit"
+            # git commit -m "$repo の変更を反映" || echo "No changes to commit"
+            # git push origin $FILE_SYNC_BRANCH_BASE
             git checkout -b $FILE_SYNC_BRANCH_NEW origin/main
+
             CONFLICT=false
             # コンフリクトしたときと、何も差分がないときにエラーになる
             git cherry-pick $COMMIT_HASH || {
