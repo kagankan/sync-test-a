@@ -84,14 +84,6 @@ jobs:
             
 
             INITIAL=false
-            {
-              git fetch origin $FILE_SYNC_BRANCH_BASE
-              git checkout -B $FILE_SYNC_BRANCH_BASE origin/$FILE_SYNC_BRANCH_BASE
-            } || {
-              # ブランチが存在しない場合はmainから作成
-              INITIAL=true
-              git checkout -b file-sync/sync-test-c origin/main  
-            }
             #  前回の同期時刻を取得
             LAST_SYNC_AT="${{ steps.get_previous_status.outputs.result }}"
             echo "LAST_SYNC_AT: $LAST_SYNC_AT"
@@ -124,7 +116,8 @@ jobs:
             fi
 
             # 前回時点のコミットに移動
-            git checkout $(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
+            COMMIT=$(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
+            git checkout $COMMIT
             git log --graph
 
             popd
