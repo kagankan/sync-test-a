@@ -127,13 +127,10 @@ jobs:
             git add . ":!$TMP_DIR"
             git commit -m "$repo の前回時点を反映" || echo "No changes to commit"
 
-            pushd $TMP_DIR
-
-            git checkout origin/main
-
-            popd
-            
             # 追加分のファイル同期
+            pushd $TMP_DIR
+            git checkout origin/main
+            popd
             rm -rf $PATHS # 削除ファイルを反映するために一旦削除
             rsync $TMP_DIR/ . -r --exclude '.git/'
 
@@ -143,6 +140,8 @@ jobs:
             git log --graph
             COMMIT_HASH=$(git rev-parse HEAD)
             git checkout -b $FILE_SYNC_BRANCH_NEW origin/main  
+
+            rm -rf $TMP_DIR
 
             CONFLICT=false
             # コンフリクトしたときと、何も差分がないときにエラーになる
