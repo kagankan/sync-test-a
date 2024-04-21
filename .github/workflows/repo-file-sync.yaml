@@ -96,8 +96,6 @@ jobs:
             git clone --filter=blob:none --no-checkout --sparse --depth 20 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR
             
             pushd $TMP_DIR
-
-            git log --oneline
             
             git config core.sparseCheckout true
             git sparse-checkout set --no-cone $PATHS
