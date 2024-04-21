@@ -122,6 +122,12 @@ jobs:
               rm -rf $TMP_DIR
               continue
             fi
+
+            last=$(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
+            echo $last
+            git rebase -i -x "git commit --ammend -m 'test'" $last
+            git log
+
             
             # ファイル同期
             echo $MERGE_COMMITS
