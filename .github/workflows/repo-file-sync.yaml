@@ -82,7 +82,8 @@ jobs:
             # クローン
             REPO_FULL="$owner/$repo"
             TMP_DIR="tmp"
-            git clone --filter=blob:none --no-checkout --sparse --shallow-since='"$LAST_SYNC_AT"' https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR
+            # 直近20件以内にはあるだろう、という決め打ち
+            git clone --filter=blob:none --no-checkout --sparse --depth 20 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR
             
             pushd $TMP_DIR
 
