@@ -39,6 +39,7 @@ jobs:
         with:
           app-id: ${{ secrets.REPO_FILE_SYNC_APP_ID }}
           private-key: ${{ secrets.REPO_FILE_SYNC_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
           # ここに権限を与えないと、workflowsの書き換えができない
