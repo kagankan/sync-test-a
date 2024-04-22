@@ -44,8 +44,8 @@ jobs:
         with:
           # ここに権限を与えないと、workflowsの書き換えができない
           token: ${{ steps.generate_token.outputs.token }}
-      - name: Get Previous Run Status
-        id: get_previous_status
+      - name: 前回の同期時刻を取得
+        id: get_previous_run
         uses: actions/github-script@v7
         with:
           github-token: ${{ steps.generate_token.outputs.token }}
@@ -74,11 +74,10 @@ jobs:
           git config user.name "file-sync [bot]"
           git config user.email "<email@example.com>"
 
-          #  前回の同期時刻を取得
-          PREVIOUS_RUN="${{ steps.get_previous_status.outputs.result }}"
-          echo "PREVIOUS_RUN: $PREVIOUS_RUN"
-          # PREVIOUS_RUNがない場合は初回
-          [ -z "$PREVIOUS_RUN" ] && INITIAL=true || INITIAL=false
+          previous_run="${{ steps.get_previous_run.outputs.result }}"
+          echo "previous_run: $previous_run"
+          # previous_runが空の場合は初回
+          [ -z "$previous_run" ] && initial_run=true || initial_run=false
 
           workspace_dir=$(pwd)
 
@@ -88,10 +87,10 @@ jobs:
             owner=$(echo "$setting" | jq -r '.owner')
             repo=$(echo "$setting" | jq -r '.repo')
             paths=$(echo "$setting" | jq -r '.paths[]' | sed 's/\n/ /g')
-            FILE_SYNC_BRANCH_TMP="file-sync/$repo/${{ github.run_id }}-tmp"
-            FILE_SYNC_BRANCH_NEW="file-sync/$repo/${{ github.run_id }}"
-            REPO_FULL="$owner/$repo"
-            TMP_DIR="tmp"
+            branch_tmp="file-sync/$repo/${{ github.run_id }}-tmp"
+            branch_new="file-sync/$repo/${{ github.run_id }}"
+            repo_full="$owner/$repo"
+            tmp_dir="tmp"
 
             echo "========================================"
             echo "$owner/$repo の反映"
@@ -99,19 +98,19 @@ jobs:
 
             # クローン
             # 直近20件以内にはあるだろう、という決め打ち
-            git clone --filter=blob:none --no-checkout --sparse --depth 20 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$REPO_FULL.git $TMP_DIR
+            git clone --filter=blob:none --no-checkout --sparse --depth 20 https://x-access-token:${{ steps.generate_token.outputs.token }}@github.com/$repo_full.git $tmp_dir
             
-            pushd $TMP_DIR
+            pushd $tmp_dir
 
             # コミット履歴からマージされたプルリクエストを取得
             # mergesがないと関係ないコミットも拾ってしまった
-            MERGE_COMMITS=$(git log --sparse --merges --first-parent --since "$PREVIOUS_RUN" --oneline --pretty=format:'%s' -- $paths)
+            merge_logs=$(git log --sparse --merges --first-parent --since "$previous_run" --oneline --pretty=format:'%s' -- $paths)
             
-            # MERGE_COMMITSが空の場合は何もしない
-            if [ -z "$MERGE_COMMITS" ] && [ $INITIAL = false ]; then
+            # merge_logsが空の場合は何もしない
+            if [ -z "$merge_logs" ] && [ $initial_run = false ]; then
               echo "反映する変更がありません"
               popd
-              rm -rf $TMP_DIR
+              rm -rf $tmp_dir
               continue
             fi
 
@@ -122,74 +121,74 @@ jobs:
 
             # 作業ブランチを作成
             popd
-            git checkout -b $FILE_SYNC_BRANCH_TMP origin/main  
+            git checkout -b $branch_tmp origin/main  
             
             # 初回は丸ごとコピーするので、前回時点のファイルを反映しない
-            if [ $INITIAL = false ]; then
+            if [ $initial_run = false ]; then
               # 前回時点のファイルを反映
-              pushd $TMP_DIR
-              COMMIT=$(git rev-list -1 --before="${{ steps.get_previous_status.outputs.result }}" main)
-              echo "COMMIT: $COMMIT"
-              git -c advice.detachedHead=false checkout $COMMIT
+              pushd $tmp_dir
+              previous_commit=$(git rev-list -1 --before="${{ steps.get_previous_run.outputs.result }}" main)
+              echo "previous_commit: $previous_commit"
+              git -c advice.detachedHead=false checkout $previous_commit
               popd
               rm -rf $paths # 削除ファイルを反映するために一旦削除
-              rsync $TMP_DIR/ . -r --exclude '.git/'
+              rsync $tmp_dir/ . -r --exclude '.git/'
 
               # コミット作成
-              git add . ":!$TMP_DIR"
+              git add . ":!$tmp_dir"
               git commit -m "$repo の前回時点を反映" || echo "No changes to commit"
             fi
 
             # 追加分のファイル同期
-            pushd $TMP_DIR
+            pushd $tmp_dir
             git checkout origin/main
             popd
             rm -rf $paths # 削除ファイルを反映するために一旦削除
-            rsync $TMP_DIR/ . -r --exclude '.git/'
+            rsync $tmp_dir/ . -r --exclude '.git/'
 
             # コミット作成
-            git add . ":!$TMP_DIR"
+            git add . ":!$tmp_dir"
             git commit -m "$repo の変更を反映" || echo "No changes to commit"
 
-            COMMIT_HASH=$(git rev-parse HEAD)
-            git checkout -b $FILE_SYNC_BRANCH_NEW origin/main  
-            rm -rf $TMP_DIR
+            commit_hash=$(git rev-parse HEAD)
+            git checkout -b $branch_new origin/main  
+            rm -rf $tmp_dir
 
-            CONFLICT=false
+            conflict=false
             # コンフリクトしたときと、何も差分がないときにエラーになる
-            git cherry-pick $COMMIT_HASH || {
-              GIT_STATUS=$(git status -s)
-              [ -z "$GIT_STATUS" ] && {
+            git cherry-pick $commit_hash || {
+              git_status=$(git status -s)
+              [ -z "$git_status" ] && {
                 echo "差分がありません"
                 git cherry-pick --skip
                 continue
               }
 
-              CONFLICT=true
+              conflict=true
               echo "コンフリクトしました"
               git checkout --theirs .
-              git add . ":!$TMP_DIR"
+              git add . ":!$tmp_dir"
               git cherry-pick --continue
-              git push origin $FILE_SYNC_BRANCH_TMP
+              git push origin $branch_tmp
             }
-            git push origin $FILE_SYNC_BRANCH_NEW
+            git push origin $branch_new
 
             # スラッシュが入るため、デリミタを変える
-            MERGED_PULLS=$(echo $MERGE_COMMITS | grep -o '#[0-9]\+' | sed "s|^|$REPO_FULL|")
+            merged_pulls=$(echo $merge_logs | grep -o '#[0-9]\+' | sed "s|^|$repo_full|")
 
             # プルリクエストを作成
             echo "Creating pull request"
             gh pr create \
-            -B main -H $FILE_SYNC_BRANCH_NEW \
+            -B main -H $branch_new \
             --reviewer kagankan \
-            --title "$repo 取り込み $($CONFLICT && echo '（コンフリクト）' || echo '')" \
-            --body "$($CONFLICT && echo "反映中にコンフリクトが発生しました。
+            --title "$repo 取り込み $($conflict && echo '（コンフリクト）' || echo '')" \
+            --body "$($conflict && echo "反映中にコンフリクトが発生しました。
             
           - 上書きする場合：このままマージしてください。
-          - 手動で修正する場合：このPRはクローズし、新しいブランチで \`git cherry-pick $COMMIT_HASH\` を実行してPRを作成してください。
+          - 手動で修正する場合：このPRはクローズし、新しいブランチで \`git cherry-pick $commit_hash\` を実行してPRを作成してください。
           - 反映する必要がない場合：クローズしてください。" || echo '自動生成の取り込みです。マージするかクローズしてください。')
 
           ## 関連PR
-          $($INITIAL && echo '初回反映です' || echo "$MERGED_PULLS")"
+          $($initial_run && echo '初回反映です' || echo "$merged_pulls")"
 
           done
