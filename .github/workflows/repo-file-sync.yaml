@@ -2,7 +2,7 @@
 name: Repo File Sync
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch: 
   schedule:
     - cron: "0 3 * * MON-FRI" # Run workflow at 12:00 JST every MON-FRI
 
@@ -65,8 +65,6 @@ jobs:
             // デバッグのため固定値
             return '2024-04-21T11:50:03Z';
 
-        #env:
-        #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: ファイル反映
         env:
           # ghコマンドを使うために必要
