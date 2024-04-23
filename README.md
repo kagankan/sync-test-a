@@ -1,7 +1,9 @@
-# sync-test-a
+# sync-test-b
+
+bだけの変更
 
 追加するよ
-edit eet
+edit eett
 ブランチで編集
 
 あああ
@@ -10,5 +12,5 @@ edit eet
 
 bで追加したから入れて　共通の編集だよ
 test
-add
-cで追加++++++++
+add＋＋+
+aaa
