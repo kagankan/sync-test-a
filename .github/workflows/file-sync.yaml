@@ -62,9 +62,7 @@ jobs:
               // 初回の場合は空文字を返す
               return '';
             }
-            // return previousRun.run_started_at;
-            // デバッグのため固定値
-            return '2024-04-21T11:50:03Z';
+            return previousRun.run_started_at;
 
       - name: ファイル反映
         env:
