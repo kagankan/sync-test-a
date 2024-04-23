@@ -1,4 +1,4 @@
-# .github/workflows/repo-file-sync.yaml
+# .github/workflows/file-sync.yaml
 name: Repo File Sync
 
 on:
@@ -53,7 +53,7 @@ jobs:
             const { data: runs } = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: "repo-file-sync.yaml",
+              workflow_id: "file-sync.yaml",
               per_page: 2,
             });
             console.log(runs);
