@@ -9,29 +9,29 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    env:
-      # ワークフローの書き換えにはworkflows権限が必要
-      # SETTINGS: |
-      #   [
-      #     {
-      #       "owner": "kagankan",
-      #       "repo": "sync-test-b",
-      #       "paths": [
-      #         "README.md",
-      #         ".eslintrc",
-      #         "test/*.md",
-      #         ".github/workflows/test.yaml",
-      #         ".github/workflows/test.yml"
-      #       ]
-      #     },
-      #     {
-      #       "owner": "kagankan",
-      #       "repo": "sync-test-c",
-      #       "paths": [
-      #         "README.md"
-      #       ]
-      #     }
-      #   ]
+    # env:
+    #   # ワークフローの書き換えにはworkflows権限が必要
+    #   SETTINGS: |
+    #     [
+    #       {
+    #         "owner": "kagankan",
+    #         "repo": "sync-test-b",
+    #         "paths": [
+    #           "README.md",
+    #           ".eslintrc",
+    #           "test/*.md",
+    #           ".github/workflows/test.yaml",
+    #           ".github/workflows/test.yml"
+    #         ]
+    #       },
+    #       {
+    #         "owner": "kagankan",
+    #         "repo": "sync-test-c",
+    #         "paths": [
+    #           "README.md"
+    #         ]
+    #       }
+    #     ]
     steps:
       - name: Generate token
         id: generate_token
