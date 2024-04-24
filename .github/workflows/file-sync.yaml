@@ -65,10 +65,11 @@ jobs:
           [ -z "$previous_run" ] && initial_run=true || initial_run=false
 
           workspace_dir=$(pwd)
+          reviewer=$(echo "$CONFIG" | jq -c '.reviewer')
 
           # 対象リポジトリごとにループ
-          config=$(echo "$CONFIG" | jq -c '.[]')
-          for entry in $config; do
+          repos=$(echo "$CONFIG" | jq -c '.repos[]')
+          for entry in $repos; do
             owner=$(echo "$entry" | jq -r '.owner')
             repo=$(echo "$entry" | jq -r '.repo')
             paths=$(echo "$entry" | jq -r '.paths[]' | sed 's/\n/ /g')
@@ -165,7 +166,7 @@ jobs:
             echo "Creating pull request"
             gh pr create \
             -B main -H $branch_new \
-            --reviewer kagankan \
+            --reviewer $reviewer \
             --title "$repo 取り込み $($conflict && echo '（コンフリクト）' || echo '')" \
             --body "$($conflict && echo "反映中にコンフリクトが発生しました。
             
