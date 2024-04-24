@@ -43,7 +43,7 @@ jobs:
       - name: Read settings from YAML
         id: read_settings
         run: |
-          settings_json=$(cat .github/file-sync-settings.yaml | yq -o json '.settings')
+          settings_json=$(cat .github/file-sync-config.yaml | yq -o json '.settings')
           echo $settings_json
           echo "settings=$(printf '%q' "$settings_json")" >> $GITHUB_OUTPUT
       - name: ファイル反映
