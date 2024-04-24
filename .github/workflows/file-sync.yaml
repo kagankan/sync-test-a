@@ -45,7 +45,11 @@ jobs:
         run: |
           config_json=$(cat .github/file-sync-config.yaml | yq -o json '.')
           echo $config_json
-          echo "config=$(printf '%q' "$config_json")" >> $GITHUB_OUTPUT
+          {
+            echo 'config<<EOF'
+            echo $config_json
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
       - name: ファイル反映
         env:
           # ghコマンドを使うために必要
