@@ -72,13 +72,13 @@ jobs:
             owner=$(echo "$entry" | jq -r '.owner')
             repo=$(echo "$entry" | jq -r '.repo')
             paths=$(echo "$entry" | jq -r '.paths[]' | sed 's/\n/ /g')
-            branch_tmp="file-sync/$repo/${{ github.run_id }}-tmp"
-            branch_new="file-sync/$repo/${{ github.run_id }}"
+            branch_tmp="file-sync/$repo-${{ github.run_id }}-tmp"
+            branch_new="file-sync/$repo-${{ github.run_id }}"
             repo_full="$owner/$repo"
             tmp_dir="tmp"
 
             echo "========================================"
-            echo "$owner/$repo の反映"
+            echo "$repo_full の反映"
             echo "========================================"
 
             # クローン
