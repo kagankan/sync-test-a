@@ -40,17 +40,17 @@ jobs:
               return '';
             }
             return previousRun.run_started_at;
-      - name: Read settings from YAML
-        id: read_settings
+      - name: 設定ファイルを読み込み
+        id: load_config
         run: |
-          settings_json=$(cat .github/file-sync-config.yaml | yq -o json '.settings')
-          echo $settings_json
-          echo "settings=$(printf '%q' "$settings_json")" >> $GITHUB_OUTPUT
+          config_json=$(cat .github/file-sync-config.yaml | yq -o json '.')
+          echo $config_json
+          echo "config=$(printf '%q' "$config_json")" >> $GITHUB_OUTPUT
       - name: ファイル反映
         env:
           # ghコマンドを使うために必要
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-          SETTINGS: ${{ steps.read_settings.outputs.settings }}
+          CONFIG: ${{ steps.load_config.outputs.config }}
         run: |
           git config user.name "file-sync [bot]"
           git config user.email "<email@example.com>"
@@ -62,12 +62,12 @@ jobs:
 
           workspace_dir=$(pwd)
 
-          # SETTINGSをループ
-          settings=$(echo "$SETTINGS" | jq -c '.[]')
-          for setting in $settings; do
-            owner=$(echo "$setting" | jq -r '.owner')
-            repo=$(echo "$setting" | jq -r '.repo')
-            paths=$(echo "$setting" | jq -r '.paths[]' | sed 's/\n/ /g')
+          # 対象リポジトリごとにループ
+          config=$(echo "$CONFIG" | jq -c '.[]')
+          for entry in $config; do
+            owner=$(echo "$entry" | jq -r '.owner')
+            repo=$(echo "$entry" | jq -r '.repo')
+            paths=$(echo "$entry" | jq -r '.paths[]' | sed 's/\n/ /g')
             branch_tmp="file-sync/$repo/${{ github.run_id }}-tmp"
             branch_new="file-sync/$repo/${{ github.run_id }}"
             repo_full="$owner/$repo"
