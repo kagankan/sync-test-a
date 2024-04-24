@@ -4,7 +4,7 @@ name: Repo File Sync
 on:
   workflow_dispatch: 
   schedule:
-    - cron: "0 0 * * MON" # Run workflow at 9:00 JST every MON
+    - cron: "0 0 * * MON,THU" # Run workflow at 9:00 JST every MON
 
 jobs:
   sync:
