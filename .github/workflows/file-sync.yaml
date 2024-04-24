@@ -9,29 +9,6 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    # env:
-    #   # ワークフローの書き換えにはworkflows権限が必要
-    #   SETTINGS: |
-    #     [
-    #       {
-    #         "owner": "kagankan",
-    #         "repo": "sync-test-b",
-    #         "paths": [
-    #           "README.md",
-    #           ".eslintrc",
-    #           "test/*.md",
-    #           ".github/workflows/test.yaml",
-    #           ".github/workflows/test.yml"
-    #         ]
-    #       },
-    #       {
-    #         "owner": "kagankan",
-    #         "repo": "sync-test-c",
-    #         "paths": [
-    #           "README.md"
-    #         ]
-    #       }
-    #     ]
     steps:
       - name: Generate token
         id: generate_token
@@ -68,11 +45,12 @@ jobs:
         run: |
           settings=$(cat .github/file-sync-settings.yaml | yq -o json '.settings')
           echo $settings
-          echo "SETTINGS=$settings" >> $GITHUB_ENV
+          echo "settings=$settings" >> $GITHUB_OUTPUT
       - name: ファイル反映
         env:
           # ghコマンドを使うために必要
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          SETTINGS: ${{ steps.read_settings.outputs.settings }}
         run: |
           git config user.name "file-sync [bot]"
           git config user.email "<email@example.com>"
