@@ -3,8 +3,8 @@ name: Repo File Sync
 
 on:
   workflow_dispatch: 
-  schedule:
-    - cron: "0 0 * * MON,THU" # 月・木 9:00 JST
+  # schedule:
+  #   - cron: "0 0 * * MON,THU" # 月・木 9:00 JST
 
 jobs:
   sync:
